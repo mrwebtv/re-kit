@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { migrations } from './migrations'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -61,6 +62,8 @@ export default buildConfig({
   editor: defaultLexical,
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL },
+    // Runs pending migrations automatically when the app starts in production
+    prodMigrations: migrations,
   }),
   collections: [Properties, Agents, Enquiries, Viewings, Pages, Posts, Media, Categories, Users],
   // SMTP works with Hostinger Mail, Resend SMTP or any provider. Without SMTP_HOST, emails are logged to the console.

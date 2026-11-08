@@ -1,33 +1,49 @@
+# Production: app + Postgres (PostGIS) + Caddy with automatic HTTPS.
+# Usage: cp .env.example .env, fill it in, then `docker compose up -d --build`
 services:
-  payload:
-    image: node:24-alpine
-    ports:
-      - '3000:3000'
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD}@postgres:5432/realestate
     volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && pnpm install && pnpm dev"
+      - media:/app/public/media
     depends_on:
       postgres:
         condition: service_healthy
-    env_file:
-      - .env
 
   postgres:
     image: postgis/postgis:17-3.5
     restart: unless-stopped
     environment:
       POSTGRES_USER: payload
-      POSTGRES_PASSWORD: payload
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: realestate
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U payload -d realestate']
       interval: 5s
-      retries: 10
+      retries: 20
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
 
 volumes:
   pgdata:
-  node_modules:
+  media:
+  caddy_data:
+  caddy_config:
