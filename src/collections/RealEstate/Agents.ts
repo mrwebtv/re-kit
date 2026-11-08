@@ -1,0 +1,24 @@
+import type { CollectionConfig } from 'payload'
+import { slugField } from 'payload'
+import { anyone } from '../../access/anyone'
+import { authenticated } from '../../access/authenticated'
+
+export const Agents: CollectionConfig = {
+  slug: 'agents',
+  admin: { useAsTitle: 'name', defaultColumns: ['name', 'jobTitle', 'email', 'phone'], group: 'Real Estate' },
+  access: { read: anyone, create: authenticated, update: authenticated, delete: authenticated },
+  fields: [
+    { name: 'name', type: 'text', required: true },
+    slugField({ useAsSlug: 'name', required: false }),
+    { name: 'jobTitle', type: 'text' },
+    { name: 'photo', type: 'upload', relationTo: 'media' },
+    {
+      type: 'row',
+      fields: [
+        { name: 'email', type: 'email', required: true },
+        { name: 'phone', type: 'text' },
+      ],
+    },
+    { name: 'bio', type: 'textarea' },
+  ],
+}
