@@ -118,10 +118,12 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    'site-settings': SiteSetting;
     header: Header;
     footer: Footer;
   };
   globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
@@ -375,7 +377,12 @@ export interface Enquiry {
   name: string;
   email: string;
   phone?: string | null;
+  /**
+   * For valuation requests
+   */
+  propertyAddress?: string | null;
   message?: string | null;
+  website?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -392,6 +399,7 @@ export interface Viewing {
   email: string;
   phone?: string | null;
   message?: string | null;
+  website?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1256,7 +1264,9 @@ export interface EnquiriesSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   phone?: T;
+  propertyAddress?: T;
   message?: T;
+  website?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1272,6 +1282,7 @@ export interface ViewingsSelect<T extends boolean = true> {
   email?: T;
   phone?: T;
   message?: T;
+  website?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1856,6 +1867,45 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * The website design. Switching it changes the whole site instantly.
+   */
+  theme: 'editorial' | 'modern' | 'dark' | 'swiss';
+  agencyName: string;
+  tagline?: string | null;
+  /**
+   * Optional. Without a logo the agency name is shown.
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Optional hex colour, e.g. #8A6A3F. Blank = the theme default.
+   */
+  accentColor?: string | null;
+  heroHeadline?: string | null;
+  heroText?: string | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * Image beside the valuation section.
+   */
+  sellImage?: (number | null) | Media;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  currencySymbol?: string | null;
+  /**
+   * For price formatting, e.g. USD, EUR, GBP
+   */
+  currencyCode?: string | null;
+  areaUnit?: ('sqm' | 'sqft') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
 export interface Header {
@@ -1911,6 +1961,30 @@ export interface Footer {
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  theme?: T;
+  agencyName?: T;
+  tagline?: T;
+  logo?: T;
+  accentColor?: T;
+  heroHeadline?: T;
+  heroText?: T;
+  heroImage?: T;
+  sellImage?: T;
+  email?: T;
+  phone?: T;
+  address?: T;
+  currencySymbol?: T;
+  currencyCode?: T;
+  areaUnit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

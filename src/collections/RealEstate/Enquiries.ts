@@ -2,13 +2,14 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { sendLeadEmails } from '../../hooks/sendLeadEmails'
+import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
 
 export const Enquiries: CollectionConfig = {
   slug: 'enquiries',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'type', 'property', 'status', 'createdAt'], group: 'Leads' },
   access: { create: anyone, read: authenticated, update: authenticated, delete: authenticated },
   defaultSort: '-createdAt',
-  hooks: { afterChange: [sendLeadEmails('enquiry')] },
+  hooks: { beforeValidate: [rateLimitPublic], afterChange: [sendLeadEmails('enquiry')] },
   fields: [
     {
       type: 'row',
@@ -41,6 +42,8 @@ export const Enquiries: CollectionConfig = {
         { name: 'phone', type: 'text' },
       ],
     },
+    { name: 'propertyAddress', type: 'text', admin: { description: 'For valuation requests' } },
     { name: 'message', type: 'textarea' },
+    honeypotField,
   ],
 }

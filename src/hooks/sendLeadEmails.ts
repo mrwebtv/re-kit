@@ -21,12 +21,14 @@ export const sendLeadEmails =
       propertyTitle = property.title
       if (property.agent && typeof property.agent === 'object') agentEmail = property.agent.email
     }
-    const label = kind === 'viewing' ? 'viewing request' : 'enquiry'
+    const label = kind === 'viewing' ? 'viewing request' : doc.type === 'valuation' ? 'valuation request' : 'enquiry'
     const rows = Object.entries({
       Name: doc.name,
       Email: doc.email,
       Phone: doc.phone,
+      Type: doc.type,
       Property: propertyTitle,
+      'Property address': doc.propertyAddress,
       'Preferred date': doc.preferredDate,
       Message: doc.message,
     })

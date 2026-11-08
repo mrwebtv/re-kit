@@ -2,13 +2,14 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { sendLeadEmails } from '../../hooks/sendLeadEmails'
+import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
 
 export const Viewings: CollectionConfig = {
   slug: 'viewings',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'property', 'preferredDate', 'status'], group: 'Leads' },
   access: { create: anyone, read: authenticated, update: authenticated, delete: authenticated },
   defaultSort: '-createdAt',
-  hooks: { afterChange: [sendLeadEmails('viewing')] },
+  hooks: { beforeValidate: [rateLimitPublic], afterChange: [sendLeadEmails('viewing')] },
   fields: [
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     {
@@ -36,5 +37,6 @@ export const Viewings: CollectionConfig = {
       ],
     },
     { name: 'message', type: 'textarea' },
+    honeypotField,
   ],
 }

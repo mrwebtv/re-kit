@@ -13,6 +13,8 @@ import { Users } from './collections/Users'
 import { Agents, Enquiries, Properties, Viewings } from './collections/RealEstate'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { Footer } from './Footer/config'
+import { SiteSettings } from './globals/SiteSettings'
+import { seedDemoEndpoint } from './endpoints/demo'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -82,7 +84,8 @@ export default buildConfig({
       }
     : {}),
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [SiteSettings, Header, Footer],
+  endpoints: [seedDemoEndpoint],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
