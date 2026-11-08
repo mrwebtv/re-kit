@@ -2,6 +2,7 @@
 # and the Deploy on Hostinger button. Nothing else from the repo is needed.
 #
 # Optional variables (set them in Docker Manager before deploying):
+#   HTTP_PORT / HTTPS_PORT  default 80 / 443; set e.g. 8080 / 8443 if those are taken
 #   DOMAIN             your domain, pointed at the VPS IP; enables automatic HTTPS
 #   POSTGRES_PASSWORD  database password (database is never exposed outside the server)
 #   LEADS_INBOX, EMAIL_FROM, EMAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
@@ -45,8 +46,9 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
+      # Change these if another app on the server already uses 80/443
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
     # With DOMAIN set: automatic HTTPS. Without it: plain http on the server IP.
     command: caddy reverse-proxy --from ${DOMAIN:-:80} --to app:3000
     volumes:
