@@ -1,0 +1,66 @@
+# Same as docker-compose.yml but on ports 8080/8443, for servers where 80/443 are already taken.
+# Standalone compose file: works with Hostinger Docker Manager "Compose from URL"
+# and the Deploy on Hostinger button. Nothing else from the repo is needed.
+#
+# Optional variables (set them in Docker Manager before deploying):
+#   HTTP_PORT / HTTPS_PORT  default 80 / 443; set e.g. 8080 / 8443 if those are taken
+#   DOMAIN             your domain, pointed at the VPS IP; enables automatic HTTPS
+#   POSTGRES_PASSWORD  database password (database is never exposed outside the server)
+#   LEADS_INBOX, EMAIL_FROM, EMAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
+services:
+  app:
+    image: ghcr.io/mrwebtv/re-kit:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD:-payload-change-me}@postgres:5432/realestate
+      DOMAIN: ${DOMAIN:-}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-}
+      LEADS_INBOX: ${LEADS_INBOX:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    volumes:
+      - media:/app/public/media
+      - appdata:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: payload
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-payload-change-me}
+      POSTGRES_DB: realestate
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U payload -d realestate']
+      interval: 5s
+      retries: 20
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      # Change these if another app on the server already uses 80/443
+      - '${HTTP_PORT:-8080}:80'
+      - '${HTTPS_PORT:-8443}:443'
+    # With DOMAIN set: automatic HTTPS. Without it: plain http on the server IP.
+    command: caddy reverse-proxy --from ${DOMAIN:-:80} --to app:3000
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  media:
+  appdata:
+  caddy_data:
+  caddy_config:
