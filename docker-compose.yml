@@ -1,14 +1,28 @@
-# Production: app + Postgres (PostGIS) + Caddy with automatic HTTPS.
-# Usage: cp .env.example .env, fill it in, then `docker compose up -d --build`
+# Standalone compose file: works with Hostinger Docker Manager "Compose from URL"
+# and the Deploy on Hostinger button. Nothing else from the repo is needed.
+#
+# Optional variables (set them in Docker Manager before deploying):
+#   DOMAIN             your domain, pointed at the VPS IP; enables automatic HTTPS
+#   POSTGRES_PASSWORD  database password (database is never exposed outside the server)
+#   LEADS_INBOX, EMAIL_FROM, EMAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
 services:
   app:
-    build: .
+    image: ghcr.io/OWNER/re-kit:latest
     restart: unless-stopped
-    env_file: .env
     environment:
-      DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD}@postgres:5432/realestate
+      DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD:-payload-change-me}@postgres:5432/realestate
+      DOMAIN: ${DOMAIN:-}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-}
+      LEADS_INBOX: ${LEADS_INBOX:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     volumes:
       - media:/app/public/media
+      - appdata:/app/data
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,7 +32,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: payload
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-payload-change-me}
       POSTGRES_DB: realestate
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -33,10 +47,9 @@ services:
     ports:
       - '80:80'
       - '443:443'
-    environment:
-      DOMAIN: ${DOMAIN}
+    # With DOMAIN set: automatic HTTPS. Without it: plain http on the server IP.
+    command: caddy reverse-proxy --from ${DOMAIN:-:80} --to app:3000
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -45,5 +58,6 @@ services:
 volumes:
   pgdata:
   media:
+  appdata:
   caddy_data:
   caddy_config:

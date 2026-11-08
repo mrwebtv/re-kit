@@ -1,3 +1,36 @@
+# Real Estate Website (Payload CMS 3 + Next.js + Postgres)
+
+A full agency website with its own admin, database and lead emails. No WordPress, no SaaS.
+
+[![Deploy on Hostinger](https://assets.hostinger.com/vps/deploy.svg)](https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/OWNER/re-kit/main/docker-compose.yml&REFERRALCODE=YOURCODE)
+
+## Deploy in one click
+
+1. Click **Deploy on Hostinger** and choose a VPS plan (KVM 2 is plenty).
+2. Docker Manager opens with this project. Optionally set `DOMAIN` (pointed at the VPS IP for automatic HTTPS), `POSTGRES_PASSWORD`, and the SMTP variables for lead emails. Then deploy.
+3. Wait 3 to 5 minutes for the first build, open `https://yourdomain.com/admin` (or `http://VPS-IP/admin`) and create your admin user.
+
+Already have a Hostinger VPS? Docker Manager > Compose from URL > paste
+`https://raw.githubusercontent.com/OWNER/re-kit/main/docker-compose.yml`
+
+Secrets are generated automatically on first start and kept on the server.
+
+## What's inside
+
+- Properties, Agents, Enquiries (property, valuation, contact) and Viewings
+- Every lead emails the property's agent and sends the visitor a confirmation
+- Pages, header and footer editable in the admin with a block builder
+- Postgres with PostGIS, media and database on persistent volumes, Caddy for HTTPS
+
+## Local development
+
+```
+cp .env.example .env   # set DATABASE_URL to a local Postgres
+pnpm install && pnpm dev
+```
+
+---
+
 # Payload Website Template
 
 This is the official [Payload Website Template](https://github.com/payloadcms/payload/blob/3.x/templates/website). Use it to power websites, blogs, or portfolios from small to enterprise. This repo includes a fully-working backend, enterprise-grade admin panel, and a beautifully designed, production-ready website.
