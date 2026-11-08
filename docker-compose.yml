@@ -7,7 +7,7 @@
 #   LEADS_INBOX, EMAIL_FROM, EMAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
 services:
   app:
-    image: ghcr.io/OWNER/re-kit:latest
+    image: ghcr.io/mrwebtv/re-kit:latest
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD:-payload-change-me}@postgres:5432/realestate

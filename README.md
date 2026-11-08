@@ -2,7 +2,7 @@
 
 A full agency website with its own admin, database and lead emails. No WordPress, no SaaS.
 
-[![Deploy on Hostinger](https://assets.hostinger.com/vps/deploy.svg)](https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/OWNER/re-kit/main/docker-compose.yml&REFERRALCODE=YOURCODE)
+[![Deploy on Hostinger](https://assets.hostinger.com/vps/deploy.svg)](https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml&REFERRALCODE=YOURCODE)
 
 ## Deploy in one click
 
@@ -11,7 +11,7 @@ A full agency website with its own admin, database and lead emails. No WordPress
 3. Wait 3 to 5 minutes for the first build, open `https://yourdomain.com/admin` (or `http://VPS-IP/admin`) and create your admin user.
 
 Already have a Hostinger VPS? Docker Manager > Compose from URL > paste
-`https://raw.githubusercontent.com/OWNER/re-kit/main/docker-compose.yml`
+`https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml`
 
 Secrets are generated automatically on first start and kept on the server.
 
