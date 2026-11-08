@@ -2,16 +2,15 @@
 
 A full agency website with its own admin, database and lead emails. No WordPress, no SaaS.
 
-[![Deploy on Hostinger](https://assets.hostinger.com/vps/deploy.svg)](https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml&REFERRALCODE=YOURCODE)
+[![Deploy on Hostinger](https://assets.hostinger.com/vps/deploy.svg)](https://mrweb.tv/hosting)
 
-## Deploy in one click
+## Deploy on Hostinger
 
-1. Click **Deploy on Hostinger** and choose a VPS plan (KVM 2 is plenty).
-2. Docker Manager opens with this project. Optionally set `DOMAIN` (pointed at the VPS IP for automatic HTTPS), `POSTGRES_PASSWORD`, and the SMTP variables for lead emails. Then deploy.
-3. Wait 3 to 5 minutes for the first build, open `https://yourdomain.com/admin` (or `http://VPS-IP/admin`) and create your admin user.
-
-Already have a Hostinger VPS? Docker Manager > Compose from URL > paste
-`https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml`
+1. Get a Hostinger VPS through **[mrweb.tv/hosting](https://mrweb.tv/hosting)** (KVM 2 is plenty) and choose **Ubuntu 24.04 with Docker**.
+2. In hPanel open **Docker Manager > Compose from URL** and paste:
+   `https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml`
+3. Optionally set `DOMAIN` (pointed at the VPS IP for automatic HTTPS), `POSTGRES_PASSWORD`, and the SMTP variables for lead emails. Then deploy.
+4. Wait 3 to 5 minutes for the first build, open `https://yourdomain.com/admin` (or `http://VPS-IP/admin`) and create your admin user.
 
 Secrets are generated automatically on first start and kept on the server.
 
