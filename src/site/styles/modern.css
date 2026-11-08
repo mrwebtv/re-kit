@@ -1,0 +1,64 @@
+.theme-modern {
+  --bg: #fff; --surface: #fff; --surface-2: #f1f5f9; --ink: #0f172a; --muted: #475569; --line: #e2e8f0;
+  --inverse: #0f172a; --on-inverse: #fff; --on-accent: #fff;
+  --font-display: Manrope, system-ui, sans-serif; --font-body: Manrope, system-ui, sans-serif; --display-weight: 800;
+  --radius: 16px; --radius-lg: 24px; --btn-radius: 999px; --shadow: 0 20px 50px rgba(15, 23, 42, 0.08); --max: 1320px;
+}
+.theme-modern .rk-display { letter-spacing: -0.035em; }
+.theme-modern .rk-eyebrow { letter-spacing: 0.06em; font-weight: 700; }
+.theme-modern .rk-nav { font-weight: 600; letter-spacing: 0; font-size: 15px; }
+.theme-modern .rk-btn { font-weight: 700; letter-spacing: 0; }
+.theme-modern .rk-field label { letter-spacing: 0.04em; font-weight: 700; }
+.theme-modern .rk-field input, .theme-modern .rk-field select, .theme-modern .rk-field textarea { border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; background-color: #fff; }
+.theme-modern .rk-field select { background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; padding-right: 34px; }
+.theme-modern .rk-field input:focus, .theme-modern .rk-field select:focus, .theme-modern .rk-field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.theme-modern .rk-filters { border: 1px solid var(--line); }
+.theme-modern .rk-badge { border-radius: 999px; letter-spacing: 0.02em; text-transform: none; font-size: 12px; font-weight: 700; background: #fff; }
+.theme-modern .rk-keyfact span:last-child, .theme-modern .rk-card-title, .theme-modern .rk-agent-name { font-weight: 800; letter-spacing: -0.02em; }
+.theme-modern .rk-summary { font-style: normal; font-weight: 600; font-size: 21px; }
+.theme-modern .rk-features li::before { content: '✓'; font-weight: 800; }
+.theme-modern .rk-toggle { border-color: var(--line); }
+.theme-modern .rk-detail-side { border: 1px solid var(--line); }
+.theme-modern .rk-tabs button.is-active { color: var(--accent); border-bottom-color: var(--accent); }
+.theme-modern .rk-pin { font-weight: 700; }
+.theme-modern .rk-pin.is-hl { background: var(--accent); }
+.md-brand { display: inline-flex; align-items: center; gap: 10px; }
+.md-brand .rk-brand { font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.md-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.md-hero { display: flex; flex-wrap: wrap; gap: 48px; align-items: center; padding-top: 24px; padding-bottom: 80px; }
+.md-hero-copy { flex: 1 1 500px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.md-hero-copy h1 { font-size: clamp(44px, 5.4vw, 70px); line-height: 1.02; }
+.md-hero-copy p { margin: 0; font-size: 19px; line-height: 1.6; color: var(--muted); max-width: 520px; }
+.md-pill { align-self: flex-start; padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, #fff); color: var(--accent); font-size: 13px; font-weight: 700; }
+.md-search { background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
+.md-search-tabs { display: flex; gap: 6px; padding: 4px; }
+.md-search-tabs label { cursor: pointer; }
+.md-search-tabs input { position: absolute; opacity: 0; pointer-events: none; }
+.md-search-tabs span { display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.md-search-tabs input:checked + span { background: var(--ink); color: #fff; }
+.md-search-tabs input:focus-visible + span { outline: 2px solid var(--accent); }
+.md-search-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.md-search-row input { flex: 1 1 220px; min-width: 0; height: 56px; border: 1px solid var(--line); border-radius: 14px; padding: 0 18px; font: 500 16px var(--font-body); color: var(--ink); outline: none; }
+.md-search-row input:focus { border-color: var(--accent); }
+.md-search-row .rk-btn { border-radius: 14px; min-height: 56px; }
+.md-hero-media { flex: 1 1 500px; min-width: 0; position: relative; }
+.md-hero-photo { height: clamp(380px, 46vw, 580px); border-radius: 28px; }
+.md-float { position: absolute; left: -20px; bottom: 32px; background: #fff; border-radius: 18px; padding: 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16); max-width: 320px; }
+.md-float-photo { width: 72px; height: 72px; flex: 0 0 72px; border-radius: 12px; }
+.md-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.md-chips a { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.md-chips a.is-on, .md-chips a:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.md-card { border: 1px solid var(--line); border-radius: 22px; padding: 10px 10px 18px; gap: 14px; transition: box-shadow 0.2s, transform 0.2s; }
+.md-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.md-card-body { padding: 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.md-card-price { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.md-card-title { font-size: 15px; font-weight: 600; }
+.md-band { display: flex; flex-wrap: wrap; background: var(--surface-2); border-radius: 28px; overflow: hidden; }
+.md-band-photo { flex: 1 1 480px; min-height: 380px; border-radius: 0; }
+.md-step { border: 1px solid var(--line); border-radius: 22px; padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+.md-step-n { width: 44px; height: 44px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 10%, #fff); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+.md-cta { background: var(--accent); color: #fff; border-radius: 28px; padding: clamp(32px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; }
+.md-footer { background: #0f172a; }
+.theme-modern .rk-agent-photo { border-radius: 20px; }
+.theme-modern .leaflet-tile-pane { filter: saturate(0.55) brightness(1.04); }
+@media (max-width: 720px) { .md-float { left: 12px; bottom: 12px; } }

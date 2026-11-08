@@ -9,7 +9,7 @@
   -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column;
 }
 .rk *, .rk *::before, .rk *::after { box-sizing: border-box; }
-.rk a { color: inherit; text-decoration: none; }
+:where(.rk) a { color: inherit; text-decoration: none; }
 .rk img { max-width: 100%; display: block; }
 .rk main { flex: 1; }
 .rk :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -192,3 +192,4 @@
 .rk-skip:focus { left: 8px; }
 .rk-card-media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--surface-2); }
 .rk-card-media > .rk-photo { position: absolute; inset: 0; border-radius: 0; aspect-ratio: auto; height: 100%; }
+.rk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

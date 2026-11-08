@@ -24,3 +24,4 @@
   .ed-sell-copy { padding: 48px 24px; }
   .ed-sell-photo { min-height: 320px; }
 }
+.theme-editorial .leaflet-tile-pane { filter: grayscale(0.85) sepia(0.12) contrast(0.95) brightness(1.03); }
