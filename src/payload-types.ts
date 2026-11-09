@@ -71,11 +71,12 @@ export interface Config {
     agents: Agent;
     enquiries: Enquiry;
     viewings: Viewing;
+    'search-alerts': SearchAlert;
+    media: Media;
+    users: User;
     pages: Page;
     posts: Post;
-    media: Media;
     categories: Category;
-    users: User;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -97,11 +98,12 @@ export interface Config {
     agents: AgentsSelect<false> | AgentsSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     viewings: ViewingsSelect<false> | ViewingsSelect<true>;
+    'search-alerts': SearchAlertsSelect<false> | SearchAlertsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -177,6 +179,11 @@ export interface Property {
   propertyType?: ('house' | 'apartment' | 'townhouse' | 'bungalow' | 'site' | 'commercial') | null;
   price: number;
   pricePeriod?: ('total' | 'month') | null;
+  /**
+   * Shown before the price, e.g. "Offers over"
+   */
+  priceQualifier?:
+    ('offers-over' | 'offers-in-the-region-of' | 'guide-price' | 'from' | 'fixed-price' | 'asking-price') | null;
   priceOnRequest?: boolean | null;
   bedrooms?: number | null;
   bathrooms?: number | null;
@@ -212,7 +219,18 @@ export interface Property {
     | null;
   gallery?: (number | Media)[] | null;
   floorPlans?: (number | Media)[] | null;
+  /**
+   * YouTube or Vimeo link. Shown when "Video and virtual tours" is on in Site Settings > Features.
+   */
   videoUrl?: string | null;
+  /**
+   * Matterport, Kuula or similar embed link.
+   */
+  tourUrl?: string | null;
+  /**
+   * Optional. Replaces the automatically generated brochure.
+   */
+  brochure?: (number | null) | Media;
   address?: {
     line1?: string | null;
     town?: string | null;
@@ -223,6 +241,16 @@ export interface Property {
   lng?: number | null;
   agent?: (number | null) | Agent;
   featured?: boolean | null;
+  /**
+   * Shown when "Open houses" is on in Site Settings > Features.
+   */
+  openHouses?:
+    | {
+        start: string;
+        end?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -383,6 +411,11 @@ export interface Enquiry {
   propertyAddress?: string | null;
   message?: string | null;
   website?: string | null;
+  /**
+   * Visitor agreed to the privacy policy
+   */
+  consent?: boolean | null;
+  consentAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -400,8 +433,73 @@ export interface Viewing {
   phone?: string | null;
   message?: string | null;
   website?: string | null;
+  /**
+   * Visitor agreed to the privacy policy
+   */
+  consent?: boolean | null;
+  consentAt?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search-alerts".
+ */
+export interface SearchAlert {
+  id: number;
+  email: string;
+  /**
+   * The search the visitor subscribed to.
+   */
+  filters?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  summary?: string | null;
+  active?: boolean | null;
+  consent?: boolean | null;
+  lastSentAt?: string | null;
+  token?: string | null;
+  website?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  role: 'admin' | 'agent';
+  /**
+   * For agent accounts: the agent profile this login manages.
+   */
+  agent?: (number | null) | Agent;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -545,33 +643,6 @@ export interface Category {
     | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1113,6 +1184,18 @@ export interface PayloadLockedDocument {
         value: number | Viewing;
       } | null)
     | ({
+        relationTo: 'search-alerts';
+        value: number | SearchAlert;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -1121,16 +1204,8 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
-        relationTo: 'media';
-        value: number | Media;
-      } | null)
-    | ({
         relationTo: 'categories';
         value: number | Category;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: number | User;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1206,6 +1281,7 @@ export interface PropertiesSelect<T extends boolean = true> {
   propertyType?: T;
   price?: T;
   pricePeriod?: T;
+  priceQualifier?: T;
   priceOnRequest?: T;
   bedrooms?: T;
   bathrooms?: T;
@@ -1222,6 +1298,8 @@ export interface PropertiesSelect<T extends boolean = true> {
   gallery?: T;
   floorPlans?: T;
   videoUrl?: T;
+  tourUrl?: T;
+  brochure?: T;
   address?:
     | T
     | {
@@ -1234,6 +1312,13 @@ export interface PropertiesSelect<T extends boolean = true> {
   lng?: T;
   agent?: T;
   featured?: T;
+  openHouses?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1267,6 +1352,8 @@ export interface EnquiriesSelect<T extends boolean = true> {
   propertyAddress?: T;
   message?: T;
   website?: T;
+  consent?: T;
+  consentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1283,8 +1370,146 @@ export interface ViewingsSelect<T extends boolean = true> {
   phone?: T;
   message?: T;
   website?: T;
+  consent?: T;
+  consentAt?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search-alerts_select".
+ */
+export interface SearchAlertsSelect<T extends boolean = true> {
+  email?: T;
+  filters?: T;
+  summary?: T;
+  active?: T;
+  consent?: T;
+  lastSentAt?: T;
+  token?: T;
+  website?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  caption?: T;
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        square?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        xlarge?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  agent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1454,100 +1679,6 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  caption?: T;
-  folder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        square?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        medium?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        og?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -1565,30 +1696,6 @@ export interface CategoriesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1882,6 +1989,10 @@ export interface SiteSetting {
    */
   logo?: (number | null) | Media;
   /**
+   * Square image, 512×512 PNG ideal.
+   */
+  favicon?: (number | null) | Media;
+  /**
    * Optional hex colour, e.g. #8A6A3F. Blank = the theme default.
    */
   accentColor?: string | null;
@@ -1892,15 +2003,139 @@ export interface SiteSetting {
    * Image beside the valuation section.
    */
   sellImage?: (number | null) | Media;
+  /**
+   * Public contact email, also the inbox for general enquiries.
+   */
   email?: string | null;
   phone?: string | null;
   address?: string | null;
   currencySymbol?: string | null;
   /**
-   * For price formatting, e.g. USD, EUR, GBP
+   * e.g. USD, EUR, GBP
    */
   currencyCode?: string | null;
   areaUnit?: ('sqm' | 'sqft') | null;
+  brochureEnabled?: boolean | null;
+  /**
+   * Small print at the bottom of each brochure page.
+   */
+  brochureFooter?: string | null;
+  smtpHost?: string | null;
+  smtpPort?: number | null;
+  smtpUser?: string | null;
+  /**
+   * Stored in your database, never shown on the website.
+   */
+  smtpPass?: string | null;
+  /**
+   * Usually the same as the SMTP user.
+   */
+  emailFrom?: string | null;
+  /**
+   * Gets leads for properties with no agent, and a copy of every lead if "Copy all leads" is on.
+   */
+  leadsInbox?: string | null;
+  copyAllLeads?: boolean | null;
+  /**
+   * Default description for search engines and link previews.
+   */
+  metaDescription?: string | null;
+  /**
+   * 1200×630. Used when a page has no photo of its own.
+   */
+  ogImage?: (number | null) | Media;
+  /**
+   * Turn on while the site is in development.
+   */
+  noindex?: boolean | null;
+  /**
+   * Legal entity shown in the privacy policy and footer, e.g. "Aldridge & Vale Ltd".
+   */
+  companyName?: string | null;
+  /**
+   * Blank = a standard policy is generated from your agency name and contact details.
+   */
+  privacyPolicy?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  consentText?: string | null;
+  showCredit?: boolean | null;
+  creditText?: string | null;
+  creditUrl?: string | null;
+  features?: {
+    /**
+     * Shows a video and/or 3D tour on listings that have one.
+     */
+    videoTours?: boolean | null;
+    /**
+     * Lets you add open-house dates to listings and shows them on the site.
+     */
+    openHouses?: boolean | null;
+    /**
+     * Adds a repayment calculator to properties for sale.
+     */
+    mortgageCalculator?: boolean | null;
+    /**
+     * Default interest rate %
+     */
+    mortgageRate?: number | null;
+    /**
+     * Default term in years
+     */
+    mortgageYears?: number | null;
+    /**
+     * Default deposit %
+     */
+    mortgageDeposit?: number | null;
+    /**
+     * Visitors can subscribe to a search and get an email when a matching home is listed. Needs email set up.
+     */
+    searchAlerts?: boolean | null;
+    /**
+     * Posts every new lead as JSON to a webhook, e.g. a GoHighLevel inbound webhook, Zapier or Make.
+     */
+    crmWebhook?: boolean | null;
+    webhookUrl?: string | null;
+    /**
+     * Publishes /feed/properties.xml and /feed/properties.json for portals and partner sites.
+     */
+    propertyFeed?: boolean | null;
+    /**
+     * Adds a visitor analytics script.
+     */
+    analytics?: boolean | null;
+    analyticsProvider?: ('plausible' | 'umami' | 'ga4') | null;
+    /**
+     * Plausible: your domain. Umami: website ID. GA4: G-XXXX.
+     */
+    analyticsId?: string | null;
+    /**
+     * Script URL for self-hosted Plausible/Umami (optional).
+     */
+    analyticsSrc?: string | null;
+    /**
+     * Emails the admin when the server hits an error (max one email per 15 minutes).
+     */
+    errorAlerts?: boolean | null;
+    errorAlertEmail?: string | null;
+    /**
+     * Deletes enquiries and viewings older than the period below (GDPR data minimisation).
+     */
+    leadRetention?: boolean | null;
+    leadRetentionMonths?: number | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1971,6 +2206,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   agencyName?: T;
   tagline?: T;
   logo?: T;
+  favicon?: T;
   accentColor?: T;
   heroHeadline?: T;
   heroText?: T;
@@ -1982,6 +2218,46 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   currencySymbol?: T;
   currencyCode?: T;
   areaUnit?: T;
+  brochureEnabled?: T;
+  brochureFooter?: T;
+  smtpHost?: T;
+  smtpPort?: T;
+  smtpUser?: T;
+  smtpPass?: T;
+  emailFrom?: T;
+  leadsInbox?: T;
+  copyAllLeads?: T;
+  metaDescription?: T;
+  ogImage?: T;
+  noindex?: T;
+  companyName?: T;
+  privacyPolicy?: T;
+  consentText?: T;
+  showCredit?: T;
+  creditText?: T;
+  creditUrl?: T;
+  features?:
+    | T
+    | {
+        videoTours?: T;
+        openHouses?: T;
+        mortgageCalculator?: T;
+        mortgageRate?: T;
+        mortgageYears?: T;
+        mortgageDeposit?: T;
+        searchAlerts?: T;
+        crmWebhook?: T;
+        webhookUrl?: T;
+        propertyFeed?: T;
+        analytics?: T;
+        analyticsProvider?: T;
+        analyticsId?: T;
+        analyticsSrc?: T;
+        errorAlerts?: T;
+        errorAlertEmail?: T;
+        leadRetention?: T;
+        leadRetentionMonths?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

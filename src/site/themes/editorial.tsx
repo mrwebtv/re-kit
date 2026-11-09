@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { formatPrice, img } from '../data'
-import { AgentCard, Brand, BrandName, ContactLines, Facts, NAV, Photo, PropertyPhoto, SearchForm, href, statusLabel } from '../components/shared'
+import { AgentCard, Brand, BrandName, ContactLines, Facts, NAV, Photo, PropertyPhoto, SearchForm, href, statusLabel, FooterLegal, PriceLabel } from '../components/shared'
 import type { CardProps, HomeProps, ThemeKit } from './types'
 import type { SiteSetting } from '@/payload-types'
 
@@ -34,7 +34,7 @@ function Footer({ s }: { s: SiteSetting }) {
             <div><strong>Services</strong><Link href="/valuation">Valuations</Link><Link href="/agents">Our agents</Link><Link href="/contact">Contact</Link></div>
           </div>
         </div>
-        <div className="rk-footer-bottom"><span>© {new Date().getFullYear()} {s.agencyName}</span><span>Built with Payload CMS</span></div>
+        <div className="rk-footer-bottom"><FooterLegal s={s} /></div>
       </div>
     </footer>
   )
@@ -49,7 +49,7 @@ function Card({ p, s }: CardProps) {
       </div>
       <div className="rk-card-top">
         <h3 className="rk-card-title">{p.title}</h3>
-        <span className="rk-card-price">{formatPrice(p, s)}</span>
+        <PriceLabel p={p} s={s} className="rk-card-price" />
       </div>
       <Facts p={p} s={s} />
     </Link>

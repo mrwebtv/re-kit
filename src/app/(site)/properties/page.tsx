@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { formatPrice, getProperties, getSettings, PAGE_SIZE, type ListingFilters } from '@/site/data'
 import { getTheme } from '@/site/themes'
 import { PropertyMap, type MapPoint } from '@/site/components/PropertyMap'
+import { AlertSignup } from '@/site/components/Extras'
+import { TYPE_LABEL } from '@/site/data'
 
 export const metadata = { title: 'Properties' }
 
@@ -55,6 +57,13 @@ export default async function PropertiesPage({ searchParams }: { searchParams: S
           <select id="f-sort" name="sort" defaultValue={f.sort || ''}><option value="">Newest first</option><option value="price-desc">Price, high to low</option><option value="price-asc">Price, low to high</option></select></div>
         <button type="submit" className="rk-btn rk-btn-primary">Update</button>
       </form>
+      {s.features?.searchAlerts && (
+        <AlertSignup
+          filters={Object.fromEntries(Object.entries({ mode: f.mode, q: f.q, type: f.type, beds: f.beds, min: f.min, max: f.max }).filter(([, v]) => v)) as Record<string, string>}
+          summary={[f.type ? `${TYPE_LABEL[f.type] || f.type}s` : 'Homes', rent ? 'to rent' : 'for sale', f.q ? `in ${f.q}` : '', f.beds ? `${f.beds}+ bedrooms` : '', f.max ? `up to ${s.currencySymbol || '$'}${Number(f.max).toLocaleString('en-US')}` : ''].filter(Boolean).join(' ')}
+          consentText={s.consentText || 'I agree to receive these emails.'}
+        />
+      )}
 
       <div className="rk-results">
         <div className="rk-results-list">

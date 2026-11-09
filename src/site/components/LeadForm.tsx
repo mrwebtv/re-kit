@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react'
 type Kind = 'viewing' | 'property' | 'valuation' | 'contact'
 
 /** Posts to the Enquiries / Viewings collections, which email the agent and the visitor. */
-export function LeadForm({ kind, propertyId, submitLabel, compact }: { kind: Kind; propertyId?: number; submitLabel?: string; compact?: boolean }) {
+export function LeadForm({ kind, propertyId, submitLabel, compact, consentText }: { kind: Kind; propertyId?: number; submitLabel?: string; compact?: boolean; consentText?: string }) {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [error, setError] = useState('')
 
@@ -12,7 +12,7 @@ export function LeadForm({ kind, propertyId, submitLabel, compact }: { kind: Kin
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     const get = (k: string) => (fd.get(k) as string | null)?.trim() || undefined
-    const base = { name: get('name'), email: get('email'), phone: get('phone'), message: get('message'), website: get('website') }
+    const base = { name: get('name'), email: get('email'), phone: get('phone'), message: get('message'), website: get('website'), consent: fd.get('consent') === 'on' }
     const isViewing = kind === 'viewing'
     const body = isViewing
       ? { ...base, property: propertyId, preferredDate: get('preferredDate') ? new Date(get('preferredDate')!).toISOString() : undefined }
@@ -62,17 +62,20 @@ export function LeadForm({ kind, propertyId, submitLabel, compact }: { kind: Kin
         <label htmlFor={id('website')}>Leave this empty</label>
         <input id={id('website')} name="website" tabIndex={-1} autoComplete="off" />
       </div>
+      <label className="rk-consent">
+        <input type="checkbox" name="consent" required />
+        <span>{consentText || 'I agree to my details being used to answer this request.'} <a href="/privacy" target="_blank">Privacy policy</a></span>
+      </label>
       {state === 'error' && <p className="rk-form-error" role="alert">{error}</p>}
       <button type="submit" className="rk-btn rk-btn-primary" disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : submitLabel || 'Send'}
       </button>
-      <p className="rk-form-note">Your details are only used to answer this request.</p>
     </form>
   )
 }
 
 /** Viewing / question tabs on a property page. */
-export function PropertyContact({ propertyId }: { propertyId: number }) {
+export function PropertyContact({ propertyId, consentText }: { propertyId: number; consentText?: string }) {
   const [tab, setTab] = useState<'viewing' | 'property'>('viewing')
   return (
     <div className="rk-contact">
@@ -80,7 +83,7 @@ export function PropertyContact({ propertyId }: { propertyId: number }) {
         <button type="button" role="tab" aria-selected={tab === 'viewing'} className={tab === 'viewing' ? 'is-active' : ''} onClick={() => setTab('viewing')}>Book a viewing</button>
         <button type="button" role="tab" aria-selected={tab === 'property'} className={tab === 'property' ? 'is-active' : ''} onClick={() => setTab('property')}>Ask a question</button>
       </div>
-      <LeadForm key={tab} kind={tab} propertyId={propertyId} submitLabel={tab === 'viewing' ? 'Request viewing' : 'Send question'} compact />
+      <LeadForm key={tab} kind={tab} propertyId={propertyId} consentText={consentText} submitLabel={tab === 'viewing' ? 'Request viewing' : 'Send question'} compact />
     </div>
   )
 }

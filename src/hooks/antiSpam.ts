@@ -15,7 +15,7 @@ const MAX_PER_WINDOW = 5
 
 /** Limits public form submissions to 5 per 10 minutes per IP. Logged-in admins are not limited. */
 export const rateLimitPublic: CollectionBeforeValidateHook = ({ operation, req, data }) => {
-  if (operation !== 'create' || req.user) return data
+  if (operation !== 'create' || req.user || req.payloadAPI === 'local') return data
   const fwd = req.headers.get('x-forwarded-for') || ''
   const ip = fwd.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown'
   const now = Date.now()

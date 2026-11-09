@@ -107,6 +107,20 @@ export const TYPE_LABEL: Record<string, string> = {
   commercial: 'Commercial',
 }
 
+export const QUALIFIER_LABEL: Record<string, string> = {
+  'offers-over': 'Offers over',
+  'offers-in-the-region-of': 'Offers in the region of',
+  'guide-price': 'Guide price',
+  from: 'From',
+  'fixed-price': 'Fixed price',
+  'asking-price': 'Asking price',
+}
+
+export const qualifier = (p: Pick<Property, 'priceQualifier' | 'priceOnRequest'>) => (p.priceOnRequest ? '' : (p.priceQualifier && QUALIFIER_LABEL[p.priceQualifier]) || '')
+
+/** Public base URL of the site, set at runtime from DOMAIN (see docker/entrypoint.sh). */
+export const siteUrl = () => (process.env.SITE_URL || '').replace(/\/$/, '')
+
 export function formatPrice(p: Pick<Property, 'price' | 'pricePeriod' | 'priceOnRequest'>, s: SiteSetting, short = false) {
   if (p.priceOnRequest) return 'Price on request'
   const sym = s.currencySymbol || '$'

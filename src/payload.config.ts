@@ -10,8 +10,12 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
-import { Agents, Enquiries, Properties, Viewings } from './collections/RealEstate'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { Agents, Enquiries, Properties, SearchAlerts, Viewings } from './collections/RealEstate'
+import { siteSettingsEmailAdapter } from './lib/emailAdapter'
+import { backupsEndpoint, healthEndpoint, testEmailEndpoint } from './endpoints/admin'
+import { startMaintenance } from './lib/maintenance'
+import { hookProcessErrors, reportError } from './lib/errorAlerts'
+import { hideTemplateLeftovers } from './plugins/hideTemplate'
 import { Footer } from './Footer/config'
 import { SiteSettings } from './globals/SiteSettings'
 import { seedDemoEndpoint } from './endpoints/demo'
@@ -67,26 +71,24 @@ export default buildConfig({
     // Runs pending migrations automatically when the app starts in production
     prodMigrations: migrations,
   }),
-  collections: [Properties, Agents, Enquiries, Viewings, Pages, Posts, Media, Categories, Users],
-  // SMTP works with Hostinger Mail, Resend SMTP or any provider. Without SMTP_HOST, emails are logged to the console.
-  ...(process.env.SMTP_HOST
-    ? {
-        email: nodemailerAdapter({
-          defaultFromAddress: process.env.EMAIL_FROM || 'no-reply@example.com',
-          defaultFromName: process.env.EMAIL_FROM_NAME || 'Real Estate',
-          transportOptions: {
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT || 465),
-            secure: Number(process.env.SMTP_PORT || 465) === 465,
-            auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-          },
-        }),
-      }
-    : {}),
+  collections: [Properties, Agents, Enquiries, Viewings, SearchAlerts, Media, Users, Pages, Posts, Categories],
+  email: siteSettingsEmailAdapter,
   cors: [getServerSideURL()].filter(Boolean),
   globals: [SiteSettings, Header, Footer],
-  endpoints: [seedDemoEndpoint],
-  plugins,
+  endpoints: [seedDemoEndpoint, testEmailEndpoint, healthEndpoint, backupsEndpoint],
+  plugins: [...plugins, hideTemplateLeftovers],
+  hooks: {
+    afterError: [
+      ({ error, req }) => {
+        const status = (error as { status?: number }).status || 500
+        if (status >= 500) void reportError(req.payload, error, `${req.method} ${req.url || ''}`)
+      },
+    ],
+  },
+  onInit: async (payload) => {
+    startMaintenance(payload)
+    hookProcessErrors(payload)
+  },
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

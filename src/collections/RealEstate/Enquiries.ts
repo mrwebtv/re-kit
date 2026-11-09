@@ -1,15 +1,15 @@
 import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
-import { authenticated } from '../../access/authenticated'
-import { sendLeadEmails } from '../../hooks/sendLeadEmails'
+import { adminOnly, adminOrOwnAgent } from '../../access/roles'
+import { consentFields, handleNewLead, requireConsent } from '../../hooks/leads'
 import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
 
 export const Enquiries: CollectionConfig = {
   slug: 'enquiries',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'type', 'property', 'status', 'createdAt'], group: 'Leads' },
-  access: { create: anyone, read: authenticated, update: authenticated, delete: authenticated },
+  access: { create: anyone, read: adminOrOwnAgent('property.agent'), update: adminOrOwnAgent('property.agent'), delete: adminOnly },
   defaultSort: '-createdAt',
-  hooks: { beforeValidate: [rateLimitPublic], afterChange: [sendLeadEmails('enquiry')] },
+  hooks: { beforeValidate: [rateLimitPublic, requireConsent], afterChange: [handleNewLead('enquiry')] },
   fields: [
     {
       type: 'row',
@@ -45,5 +45,6 @@ export const Enquiries: CollectionConfig = {
     { name: 'propertyAddress', type: 'text', admin: { description: 'For valuation requests' } },
     { name: 'message', type: 'textarea' },
     honeypotField,
+    ...consentFields,
   ],
 }

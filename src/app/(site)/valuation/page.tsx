@@ -1,8 +1,10 @@
 import { LeadForm } from '@/site/components/LeadForm'
+import { getSettings } from '@/site/data'
 
 export const metadata = { title: 'Free valuation' }
 
-export default function ValuationPage() {
+export default async function ValuationPage() {
+  const s = await getSettings()
   return (
     <div className="rk-wrap">
       <div className="rk-split">
@@ -16,7 +18,7 @@ export default function ValuationPage() {
             <li>Advice on presenting your home</li>
           </ul>
         </div>
-        <div><LeadForm kind="valuation" submitLabel="Request my valuation" /></div>
+        <div><LeadForm kind="valuation" submitLabel="Request my valuation" consentText={s.consentText || undefined} /></div>
       </div>
     </div>
   )

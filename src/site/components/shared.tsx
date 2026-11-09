@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Agent, Property, SiteSetting } from '@/payload-types'
-import { firstPhoto, formatArea, formatPrice, img, initials, place, STATUS_LABEL } from '../data'
+import { firstPhoto, formatArea, formatPrice, img, initials, place, qualifier, STATUS_LABEL } from '../data'
 
 export const NAV = [
   { href: '/properties?mode=buy', label: 'Buy' },
@@ -151,5 +151,27 @@ export function ContactLines({ s }: { s: SiteSetting }) {
       {s.phone && <a href={`tel:${s.phone.replace(/\s/g, '')}`}>{s.phone}</a>}
       {s.email && <a href={`mailto:${s.email}`}>{s.email}</a>}
     </>
+  )
+}
+
+/** Privacy link, company name and optional "Website by" credit. Used by every theme footer. */
+export function FooterLegal({ s }: { s: SiteSetting }) {
+  return (
+    <span className="rk-legal">
+      <span>© {new Date().getFullYear()} {s.companyName || s.agencyName}</span>
+      <Link href="/privacy">Privacy policy</Link>
+      {s.showCredit && s.creditText && (s.creditUrl ? <a href={s.creditUrl} target="_blank" rel="noopener">{s.creditText}</a> : <span>{s.creditText}</span>)}
+    </span>
+  )
+}
+
+/** "Offers over" style label above a price. */
+export function PriceLabel({ p, s, className }: { p: Property; s: SiteSetting; className?: string }) {
+  const q = qualifier(p)
+  return (
+    <span className={className}>
+      {q && <span className="rk-qualifier">{q}</span>}
+      {formatPrice(p, s)}
+    </span>
   )
 }

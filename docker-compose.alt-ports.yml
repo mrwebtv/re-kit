@@ -3,10 +3,10 @@
 # and the Deploy on Hostinger button. Nothing else from the repo is needed.
 #
 # Optional variables (set them in Docker Manager before deploying):
-#   HTTP_PORT / HTTPS_PORT  default 80 / 443; set e.g. 8080 / 8443 if those are taken
-#   DOMAIN             your domain, pointed at the VPS IP; enables automatic HTTPS
-#   POSTGRES_PASSWORD  database password (database is never exposed outside the server)
-#   LEADS_INBOX, EMAIL_FROM, EMAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
+#   DOMAIN             your domain, pointed at the VPS IP; enables trusted HTTPS
+#   HTTP_PORT / HTTPS_PORT  default 8080 / 8443
+#   POSTGRES_PASSWORD  database password (the database is never exposed outside the server)
+# Email, features and everything else are set in the admin under Site Settings.
 services:
   app:
     image: ghcr.io/mrwebtv/re-kit:latest
@@ -14,17 +14,22 @@ services:
     environment:
       DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD:-payload-change-me}@postgres:5432/realestate
       DOMAIN: ${DOMAIN:-}
-      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-}
-      LEADS_INBOX: ${LEADS_INBOX:-}
-      EMAIL_FROM: ${EMAIL_FROM:-}
-      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-}
+      SITE_URL: ${SITE_URL:-}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-465}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
     volumes:
       - media:/app/public/media
       - appdata:/app/data
+      - backups:/app/backups:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/api/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,11 +48,49 @@ services:
       interval: 5s
       retries: 20
 
+  # Nightly database dump at 03:00 and weekly photo archive, kept 14 days.
+  # Download them from the admin dashboard.
+  backup:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-payload-change-me}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - backups:/backups
+      - media:/media:ro
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        mkdir -p /backups
+        echo "Backups: database daily at 03:00, photos on Sundays, kept 14 days."
+        while true; do
+          now=$$(date +%s)
+          next=$$(date -d "$$(date +%Y-%m-%d) 03:00" +%s)
+          [ "$$next" -le "$$now" ] && next=$$((next + 86400))
+          sleep $$((next - now))
+          stamp=$$(date +%Y%m%d-%H%M)
+          if pg_dump -h postgres -U payload -d realestate --no-owner | gzip > /backups/db-$$stamp.sql.gz.tmp; then
+            mv /backups/db-$$stamp.sql.gz.tmp /backups/db-$$stamp.sql.gz
+            echo "Saved db-$$stamp.sql.gz"
+          else
+            rm -f /backups/db-$$stamp.sql.gz.tmp
+            echo "Database backup failed"
+          fi
+          if [ "$$(date +%u)" = "7" ]; then
+            tar -czf /backups/media-$$stamp.tar.gz.tmp -C /media . && mv /backups/media-$$stamp.tar.gz.tmp /backups/media-$$stamp.tar.gz
+          fi
+          find /backups -name 'db-*.sql.gz' -mtime +14 -delete
+          find /backups -name 'media-*.tar.gz' -mtime +28 -delete
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      # Change these if another app on the server already uses 80/443
       - '${HTTP_PORT:-8080}:80'
       - '${HTTPS_PORT:-8443}:443'
     # With DOMAIN set: trusted HTTPS certificate (Let's Encrypt).
@@ -72,5 +115,6 @@ volumes:
   pgdata:
   media:
   appdata:
+  backups:
   caddy_data:
   caddy_config:

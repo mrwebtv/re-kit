@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { formatArea, formatPrice, img, place } from '../data'
-import { AgentCard, Brand, ContactLines, Photo, PropertyPhoto, SearchForm, href, statusLabel } from '../components/shared'
+import { AgentCard, Brand, ContactLines, Photo, PropertyPhoto, SearchForm, href, statusLabel, FooterLegal, PriceLabel } from '../components/shared'
 import type { CardProps, HomeProps, ThemeKit } from './types'
 import type { SiteSetting } from '@/payload-types'
 
@@ -37,7 +37,7 @@ function Footer({ s }: { s: SiteSetting }) {
             <div><strong>Private office</strong><Link href="/valuation">Valuations</Link><Link href="/agents">Advisors</Link><Link href="/contact">Enquire</Link></div>
           </div>
         </div>
-        <div className="rk-footer-bottom"><span>© {new Date().getFullYear()} {s.agencyName}</span><span>By appointment only</span></div>
+        <div className="rk-footer-bottom"><FooterLegal s={s} /><span>By appointment only</span></div>
       </div>
     </footer>
   )
@@ -54,7 +54,7 @@ function Card({ p, s }: CardProps) {
       <h3 className="rk-card-title">{p.title}</h3>
       <div className="dk-card-meta">
         <span>{[p.bedrooms ? `${p.bedrooms} bedrooms` : '', formatArea(p.floorArea, s)].filter(Boolean).join(' · ')}</span>
-        <span className="dk-gold">{formatPrice(p, s)}</span>
+        <PriceLabel p={p} s={s} className="dk-gold" />
       </div>
     </Link>
   )

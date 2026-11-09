@@ -193,3 +193,41 @@
 .rk-card-media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--surface-2); }
 .rk-card-media > .rk-photo { position: absolute; inset: 0; border-radius: 0; aspect-ratio: auto; height: 100%; }
 .rk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* consent, share, extras */
+.rk-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; color: var(--muted); cursor: pointer; }
+.rk-consent input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex: 0 0 auto; }
+.rk-consent a { text-decoration: underline; }
+.rk-share { display: flex; flex-direction: column; gap: 14px; }
+.rk-share-pdf { width: 100%; }
+.rk-share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; }
+.rk-share-label { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.rk-share-row a, .rk-share-row button { background: none; border: 0; padding: 6px 0; font: inherit; color: var(--ink); cursor: pointer; border-bottom: 1px solid var(--line); }
+.rk-share-row a:hover, .rk-share-row button:hover { color: var(--accent); border-color: currentColor; }
+.rk-qualifier { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.rk-embed { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: var(--radius); overflow: hidden; }
+.rk-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.rk-openhouses { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.rk-openhouses li { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; display: flex; flex-direction: column; gap: 2px; min-width: 200px; }
+.rk-openhouses strong { font-family: var(--font-display); font-size: 22px; font-weight: var(--display-weight); }
+.rk-mortgage { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; }
+.rk-mortgage-fields { flex: 2 1 320px; display: flex; flex-wrap: wrap; gap: 20px; }
+.rk-mortgage-fields .rk-field { flex: 1 1 110px; }
+.rk-mortgage-result { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; }
+.rk-mortgage-result span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.rk-mortgage-result strong { font-family: var(--font-display); font-size: 40px; font-weight: var(--display-weight); line-height: 1.1; }
+.rk-mortgage-result small { color: var(--muted); font-size: 12px; }
+.rk-alert-box { position: relative; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 22px 26px; margin-top: 20px; }
+.rk-alert-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.rk-alert-open { margin-top: 20px; }
+.rk-cookies { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 900; max-width: 640px; margin: 0 auto; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 20px 50px rgba(0,0,0,.18); padding: 18px 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; justify-content: space-between; }
+.rk-cookies p { margin: 0; font-size: 14px; flex: 1 1 260px; }
+.rk-cookies a { text-decoration: underline; }
+.rk-cookies div { display: flex; gap: 10px; }
+.rk-cookies .rk-btn { min-height: 44px; padding: 0 18px; }
+.rk-legal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.rk-legal a:hover { color: var(--accent); }
+.rk-prose-page { max-width: 760px; padding: 32px 0 112px; }
+.rk-prose-page h1 { font-size: clamp(40px, 5vw, 60px); margin-bottom: 28px; }
+.rk-prose-page h2 { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 28px; margin: 36px 0 12px; }
+.rk-prose-page p, .rk-prose-page li { font-size: 16px; line-height: 1.75; }

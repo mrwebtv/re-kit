@@ -1,12 +1,17 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { anyone } from '../../access/anyone'
-import { authenticated } from '../../access/authenticated'
+import { adminOnly, isAdminUser, agentIdOf } from '../../access/roles'
 
 export const Agents: CollectionConfig = {
   slug: 'agents',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'jobTitle', 'email', 'phone'], group: 'Real Estate' },
-  access: { read: anyone, create: authenticated, update: authenticated, delete: authenticated },
+  access: {
+    read: anyone,
+    create: adminOnly,
+    delete: adminOnly,
+    update: ({ req: { user } }) => (isAdminUser(user as never) ? true : user ? { id: { equals: agentIdOf(user as never) } } : false),
+  },
   fields: [
     { name: 'name', type: 'text', required: true },
     slugField({ useAsSlug: 'name', required: false }),

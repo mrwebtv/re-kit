@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { anyone } from '../../access/anyone'
-import { authenticated } from '../../access/authenticated'
+import { adminOrOwnAgent, agentIdOf, isAgentUser, loggedIn } from '../../access/roles'
 
 export const Properties: CollectionConfig = {
   slug: 'properties',
@@ -10,8 +10,17 @@ export const Properties: CollectionConfig = {
     defaultColumns: ['title', 'price', 'status', 'propertyType', 'agent'],
     group: 'Real Estate',
   },
-  access: { read: anyone, create: authenticated, update: authenticated, delete: authenticated },
+  access: { read: anyone, create: loggedIn, update: adminOrOwnAgent('agent'), delete: adminOrOwnAgent('agent') },
   defaultSort: '-createdAt',
+  hooks: {
+    beforeChange: [
+      ({ data, req }) => {
+        // Agents can only list properties under their own name.
+        if (isAgentUser(req.user as never)) data.agent = agentIdOf(req.user as never)
+        return data
+      },
+    ],
+  },
   fields: [
     { name: 'title', type: 'text', required: true },
     slugField({ required: false }),
@@ -62,6 +71,12 @@ export const Properties: CollectionConfig = {
                     { label: 'Per month', value: 'month' },
                   ],
                 },
+                {
+                  name: 'priceQualifier',
+                  type: 'select',
+                  options: ['Offers over', 'Offers in the region of', 'Guide price', 'From', 'Fixed price', 'Asking price'].map((v) => ({ label: v, value: v.toLowerCase().replace(/ /g, '-') })),
+                  admin: { description: 'Shown before the price, e.g. "Offers over"' },
+                },
                 { name: 'priceOnRequest', type: 'checkbox' },
               ],
             },
@@ -84,7 +99,9 @@ export const Properties: CollectionConfig = {
           fields: [
             { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true },
             { name: 'floorPlans', type: 'upload', relationTo: 'media', hasMany: true },
-            { name: 'videoUrl', type: 'text' },
+            { name: 'videoUrl', type: 'text', admin: { description: 'YouTube or Vimeo link. Shown when "Video and virtual tours" is on in Site Settings > Features.' } },
+            { name: 'tourUrl', label: '3D tour URL', type: 'text', admin: { description: 'Matterport, Kuula or similar embed link.' } },
+            { name: 'brochure', label: 'Custom brochure (PDF)', type: 'upload', relationTo: 'media', admin: { description: 'Optional. Replaces the automatically generated brochure.' } },
           ],
         },
         {
@@ -118,5 +135,14 @@ export const Properties: CollectionConfig = {
     },
     { name: 'agent', type: 'relationship', relationTo: 'agents', admin: { position: 'sidebar' } },
     { name: 'featured', type: 'checkbox', admin: { position: 'sidebar' } },
+    {
+      name: 'openHouses',
+      type: 'array',
+      admin: { position: 'sidebar', description: 'Shown when "Open houses" is on in Site Settings > Features.' },
+      fields: [
+        { name: 'start', type: 'date', required: true, admin: { date: { pickerAppearance: 'dayAndTime' } } },
+        { name: 'end', type: 'date', admin: { date: { pickerAppearance: 'timeOnly' } } },
+      ],
+    },
   ],
 }

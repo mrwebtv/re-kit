@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { formatArea, formatPrice, img, place } from '../data'
-import { AgentCard, Brand, ContactLines, NAV, Photo, PropertyPhoto, href, statusLabel } from '../components/shared'
+import { AgentCard, Brand, ContactLines, NAV, Photo, PropertyPhoto, href, statusLabel, FooterLegal, PriceLabel } from '../components/shared'
 import type { CardProps, HomeProps, ThemeKit } from './types'
 import type { SiteSetting } from '@/payload-types'
 
@@ -39,7 +39,7 @@ function Footer({ s }: { s: SiteSetting }) {
             <div><strong>Company</strong><Link href="/valuation">Sell</Link><Link href="/agents">Agents</Link><Link href="/contact">Contact</Link></div>
           </div>
         </div>
-        <div className="rk-footer-bottom"><span>© {new Date().getFullYear()} {s.agencyName}</span><span>Built with Payload CMS</span></div>
+        <div className="rk-footer-bottom"><FooterLegal s={s} /></div>
       </div>
     </footer>
   )
@@ -53,7 +53,7 @@ function Card({ p, s }: CardProps) {
         <span className="rk-badge">{statusLabel(p)}</span>
       </div>
       <div className="md-card-body">
-        <span className="md-card-price">{formatPrice(p, s)}</span>
+        <PriceLabel p={p} s={s} className="md-card-price" />
         <span className="md-card-title">{p.title}</span>
         <span className="rk-muted" style={{ fontSize: 14 }}>
           {[p.bedrooms ? `${p.bedrooms} bd` : '', p.bathrooms ? `${p.bathrooms} ba` : '', formatArea(p.floorArea, s), place(p)].filter(Boolean).join(' · ')}

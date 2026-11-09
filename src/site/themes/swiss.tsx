@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { formatArea, formatPrice, img, place } from '../data'
-import { AgentCard, Brand, ContactLines, Photo, PropertyPhoto, href, statusLabel } from '../components/shared'
+import { AgentCard, Brand, ContactLines, Photo, PropertyPhoto, href, statusLabel, FooterLegal, PriceLabel } from '../components/shared'
 import type { CardProps, HomeProps, ThemeKit } from './types'
 import type { SiteSetting } from '@/payload-types'
 
@@ -33,7 +33,7 @@ function Footer({ s }: { s: SiteSetting }) {
         <span className="sw-footer-mark">{s.agencyName}</span>
         <span className="sw-mono" style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, textAlign: 'right' }}>
           <ContactLines s={s} />
-          <span>© {new Date().getFullYear()} {s.agencyName}</span>
+          <FooterLegal s={s} />
         </span>
       </div>
     </footer>
@@ -50,7 +50,7 @@ function Card({ p, s, index = 0 }: CardProps) {
       <span className="sw-dim">{place(p)}</span>
       <span className="sw-mono">{p.bedrooms ? `${p.bedrooms} BD` : ''}</span>
       <span className="sw-mono">{formatArea(p.floorArea, s).toUpperCase()}</span>
-      <span className="sw-price">{formatPrice(p, s)}</span>
+      <PriceLabel p={p} s={s} className="sw-price" />
       <span aria-hidden="true" className="sw-arrow">→</span>
     </Link>
   )

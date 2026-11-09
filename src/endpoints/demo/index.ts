@@ -35,6 +35,8 @@ type Demo = {
   propertyType: string
   price: number
   pricePeriod?: 'total' | 'month'
+  priceQualifier?: string
+  openHouse?: boolean
   bedrooms: number
   bathrooms: number
   floorArea: number
@@ -53,14 +55,14 @@ type Demo = {
 
 const DEMO: Demo[] = [
   {
-    title: 'The Old Rectory', status: 'for-sale', propertyType: 'house', price: 1850000, bedrooms: 5, bathrooms: 4, floorArea: 410, energyRating: 'B2', featured: true, agent: 0,
-    summary: 'A restored period house in an acre of walled garden, opened up for family life.',
+    title: 'Palm Court Residence', status: 'for-sale', propertyType: 'house', price: 1850000, priceQualifier: 'offers-over', bedrooms: 5, bathrooms: 4, floorArea: 410, energyRating: 'A2', featured: true, agent: 0,
+    summary: 'A contemporary family home wrapped around a pool terrace, minutes from the beach.',
     description: [
-      'Set back from a quiet lane behind a walled garden, The Old Rectory has been restored with care over the last decade. The original proportions remain: tall ceilings, deep sash windows and a staircase that turns around a light-filled hall.',
-      'The kitchen now runs the full width of the house and opens onto a stone terrace. Upstairs, five bedrooms include a main suite with dressing room and a bathroom overlooking the orchard.',
+      'Palm Court Residence was designed around light and the outdoors. Floor-to-ceiling glass opens the living spaces onto a stone terrace and a lap pool shaded by palms.',
+      'The kitchen runs the full width of the house. Upstairs, five bedrooms include a main suite with a dressing room and a bathroom overlooking the garden.',
     ],
-    features: ['Walled garden, about one acre', 'Original sash windows', 'Open-plan kitchen with larder', 'Drawing room with open fire', 'Main suite with dressing room', 'Detached garage and workshop'],
-    town: 'Riverside', line1: 'Church Lane', lat: 32.7505, lng: -117.2195, photos: ['exterior1', 'living1', 'kitchen1', 'bedroom1', 'bathroom1'],
+    features: ['Pool and stone terrace', 'Floor-to-ceiling glazing', 'Open-plan kitchen with island', 'Cedar ceilings', 'Main suite with dressing room', 'Double garage'],
+    town: 'Riverside', line1: '4 Palm Court', lat: 32.7505, lng: -117.2195, photos: ['exterior1', 'living1', 'kitchen1', 'bedroom1', 'bathroom1'], openHouse: true,
   },
   {
     title: 'Linden House', status: 'for-sale', propertyType: 'house', price: 1240000, bedrooms: 4, bathrooms: 3, floorArea: 285, energyRating: 'A3', featured: true, agent: 1,
@@ -93,20 +95,20 @@ const DEMO: Demo[] = [
     town: 'Cliffside', line1: 'Cliff Road', lat: 32.8328, lng: -117.2713, photos: ['pool2', 'exterior3', 'living4', 'bedroom4'],
   },
   {
-    title: '12 Maple Terrace', status: 'for-sale', propertyType: 'townhouse', price: 1100000, bedrooms: 4, bathrooms: 2, floorArea: 198, energyRating: 'C1', agent: 1,
-    summary: 'A handsome townhouse on a tree-lined terrace, minutes from the station.',
+    title: 'Garden House, Maple Lane', status: 'for-sale', propertyType: 'house', price: 1100000, bedrooms: 4, bathrooms: 2, floorArea: 198, energyRating: 'C1', agent: 1,
+    summary: 'A bright mid-century house with a planted front garden on a quiet lane.',
     description: [
-      'A classic townhouse over four floors, with a generous kitchen at garden level and a double reception room on the first floor.',
+      'A well-kept mid-century house with a generous kitchen, a sunny living room and four bedrooms, set behind a planted front garden.',
     ],
-    features: ['Double reception room', 'Garden with rear access', 'Close to the station', 'Original fireplaces'],
-    town: 'Northgate', line1: '12 Maple Terrace', lat: 32.7641, lng: -117.1430, photos: ['exterior4', 'kitchen3', 'living5'],
+    features: ['Planted front garden', 'Four bedrooms', 'Close to the station', 'Off-street parking'],
+    town: 'Northgate', line1: '12 Maple Lane', lat: 32.7641, lng: -117.1430, photos: ['exterior4', 'kitchen3', 'living5'],
   },
   {
-    title: 'Orchard Cottage', status: 'sale-agreed', propertyType: 'bungalow', price: 895000, bedrooms: 3, bathrooms: 2, floorArea: 165, energyRating: 'B3', agent: 3,
-    summary: 'A pretty cottage with an orchard garden at the edge of the village.',
-    description: ['Single-storey living with a vaulted kitchen, three bedrooms and a garden of fruit trees.'],
-    features: ['Orchard garden', 'Vaulted kitchen', 'Single-storey living'],
-    town: 'Westfield', line1: 'Orchard Lane', lat: 32.7395, lng: -117.2398, photos: ['exterior5', 'kitchen2', 'bedroom1'],
+    title: 'The Old Rectory', status: 'sale-agreed', propertyType: 'house', price: 895000, bedrooms: 3, bathrooms: 2, floorArea: 165, energyRating: 'B3', agent: 3,
+    summary: 'A handsome brick period house behind a walled front garden, close to the village.',
+    description: ['Original sash windows and shutters, a kitchen at the back opening onto the garden, and three bedrooms upstairs.'],
+    features: ['Walled front garden', 'Original sash windows', 'Period fireplaces'],
+    town: 'Westfield', line1: 'Church Lane', lat: 32.7395, lng: -117.2398, photos: ['exterior5', 'kitchen2', 'bedroom1'],
   },
   {
     title: 'The Boathouse', status: 'to-let', propertyType: 'house', price: 4200, pricePeriod: 'month', bedrooms: 3, bathrooms: 2, floorArea: 142, energyRating: 'B1', agent: 2,
@@ -123,6 +125,15 @@ const DEMO: Demo[] = [
     town: 'Hillcrest', line1: 'Elm Court', lat: 32.7512, lng: -117.1555, photos: ['living1', 'kitchen1', 'bathroom1'],
   },
 ]
+
+function nextSaturday() {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() + ((6 - d.getUTCDay() + 7) % 7 || 7))
+  d.setUTCHours(11, 0, 0, 0)
+  const end = new Date(d)
+  end.setUTCHours(12, 30)
+  return { start: d.toISOString(), end: end.toISOString() }
+}
 
 async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, number>) {
   if (cache.has(key)) return cache.get(key)!
@@ -145,7 +156,18 @@ async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, 
   }
 }
 
-export async function seedDemo(payload: Payload, req?: PayloadRequest) {
+const DEMO_SLUGS = ['the-old-rectory', 'linden-house', 'harbour-view-penthouse', 'villa-serena', '12-maple-terrace', 'orchard-cottage', 'the-boathouse', 'garden-apartment-elm-court', 'palm-court-residence', 'garden-house-maple-lane']
+
+/** Removes only the demo listings, demo agents and demo photos. Your own content is untouched. */
+async function removeDemo(payload: Payload, req?: PayloadRequest) {
+  await payload.delete({ collection: 'properties', where: { slug: { in: DEMO_SLUGS } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'agents', where: { email: { like: '@example.com' } }, req, overrideAccess: true })
+  const keys = Object.keys(PHOTOS)
+  await payload.delete({ collection: 'media', where: { or: keys.map((k) => ({ filename: { like: `${k}` } })) }, req, overrideAccess: true })
+}
+
+export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = false) {
+  if (reset) await removeDemo(payload, req)
   const existing = await payload.count({ collection: 'properties', req })
   if (existing.totalDocs > 0) return { skipped: true, message: 'Properties already exist, nothing was added.' }
 
@@ -175,6 +197,8 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest) {
         propertyType: p.propertyType as never,
         price: p.price,
         pricePeriod: p.pricePeriod || 'total',
+        priceQualifier: (p.priceQualifier as never) || undefined,
+        openHouses: p.openHouse ? [nextSaturday()] : undefined,
         bedrooms: p.bedrooms,
         bathrooms: p.bathrooms,
         floorArea: p.floorArea,
@@ -207,9 +231,10 @@ export const seedDemoEndpoint: Endpoint = {
   path: '/seed-demo',
   method: 'post',
   handler: async (req) => {
-    if (!req.user) return Response.json({ error: 'Log in to the admin first.' }, { status: 401 })
+    if (!req.user || (req.user as { role?: string }).role === 'agent') return Response.json({ error: 'Admins only.' }, { status: 403 })
     try {
-      const result = await seedDemo(req.payload, req)
+      const reset = new URL(req.url || 'http://x').searchParams.get('reset') === '1'
+      const result = await seedDemo(req.payload, req, reset)
       return Response.json(result)
     } catch (err) {
       req.payload.logger.error({ err, msg: 'Demo seed failed' })

@@ -12,11 +12,10 @@ for v in PAYLOAD_SECRET CRON_SECRET PREVIEW_SECRET; do
   export "$(grep "^$v=" "$SECRETS")"
 done
 
-# Public URL: explicit value, else https://DOMAIN, else plain http on the server IP
-if [ -z "$NEXT_PUBLIC_SERVER_URL" ]; then
-  if [ -n "$DOMAIN" ]; then export NEXT_PUBLIC_SERVER_URL="https://$DOMAIN"; else export NEXT_PUBLIC_SERVER_URL="http://localhost"; fi
+# Public URL used in emails, sitemap, feeds and brochures.
+if [ -z "$SITE_URL" ]; then
+  if [ -n "$DOMAIN" ]; then export SITE_URL="https://$DOMAIN"; fi
 fi
 
 pnpm payload migrate
-pnpm build
 NODE_ENV=production exec pnpm start

@@ -15,7 +15,7 @@ export default async function ContactPage() {
           <p>Questions about a home, selling, letting or anything else. We reply within one working day.</p>
           <div className="rk-contact-lines"><ContactLines s={s} /></div>
         </div>
-        <div><LeadForm kind="contact" submitLabel="Send message" /></div>
+        <div><LeadForm kind="contact" submitLabel="Send message" consentText={s.consentText || undefined} /></div>
       </div>
     </div>
   )

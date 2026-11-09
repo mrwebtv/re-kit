@@ -1,15 +1,15 @@
 import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
-import { authenticated } from '../../access/authenticated'
-import { sendLeadEmails } from '../../hooks/sendLeadEmails'
+import { adminOnly, adminOrOwnAgent } from '../../access/roles'
+import { consentFields, handleNewLead, requireConsent } from '../../hooks/leads'
 import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
 
 export const Viewings: CollectionConfig = {
   slug: 'viewings',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'property', 'preferredDate', 'status'], group: 'Leads' },
-  access: { create: anyone, read: authenticated, update: authenticated, delete: authenticated },
+  access: { create: anyone, read: adminOrOwnAgent('property.agent'), update: adminOrOwnAgent('property.agent'), delete: adminOnly },
   defaultSort: '-createdAt',
-  hooks: { beforeValidate: [rateLimitPublic], afterChange: [sendLeadEmails('viewing')] },
+  hooks: { beforeValidate: [rateLimitPublic, requireConsent], afterChange: [handleNewLead('viewing')] },
   fields: [
     { name: 'property', type: 'relationship', relationTo: 'properties', required: true },
     {
@@ -38,5 +38,6 @@ export const Viewings: CollectionConfig = {
     },
     { name: 'message', type: 'textarea' },
     honeypotField,
+    ...consentFields,
   ],
 }

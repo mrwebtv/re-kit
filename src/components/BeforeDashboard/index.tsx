@@ -2,6 +2,7 @@ import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
 
 import { DemoButton } from './DemoButton'
+import { Backups } from './Backups'
 import './index.scss'
 
 const baseClass = 'before-dashboard'
@@ -17,7 +18,7 @@ const BeforeDashboard: React.FC = () => {
           <DemoButton /> to fill the site with 8 example properties, 4 agents and photos. Delete them whenever you like.
         </li>
         <li>
-          Open <a href="/admin/globals/site-settings">Site Settings</a> to choose one of the 4 designs, and set your agency name, logo, colours and contact details.
+          Open <a href="/admin/globals/site-settings">Site Settings</a> to choose one of the 4 designs, set your agency name, logo and contact details, set up email (then send a test), and switch on any extras under Features.
         </li>
         <li>
           Add your own <a href="/admin/collections/agents">agents</a> and <a href="/admin/collections/properties">properties</a>. Leads arrive in <a href="/admin/collections/enquiries">Enquiries</a> and <a href="/admin/collections/viewings">Viewings</a> and are emailed to the agent.
@@ -26,6 +27,7 @@ const BeforeDashboard: React.FC = () => {
           <a href="/" target="_blank" rel="noopener noreferrer">View your website</a>
         </li>
       </ol>
+      <Backups />
     </div>
   )
 }
