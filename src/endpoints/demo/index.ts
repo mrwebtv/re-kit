@@ -25,10 +25,10 @@ const richText = (...paragraphs: string[]): Lexical => ({
 })
 
 const AGENTS = [
-  { name: 'Eleanor Hart', jobTitle: 'Managing director', email: 'eleanor@example.com', phone: '+1 555 0100', bio: 'Leads the sales team and handles the agency’s most exceptional homes personally.' },
-  { name: 'James Okafor', jobTitle: 'Senior sales agent', email: 'james@example.com', phone: '+1 555 0101', bio: 'Specialist in family homes on the north side of the city.' },
-  { name: 'Sofia Marin', jobTitle: 'Lettings manager', email: 'sofia@example.com', phone: '+1 555 0102', bio: 'Looks after landlords and tenants from first viewing to renewal.' },
-  { name: 'Daniel Reyes', jobTitle: 'Valuer', email: 'daniel@example.com', phone: '+1 555 0103', bio: 'Prices homes with evidence from every sale on the street.' },
+  { photo: 'agentEleanor' as PhotoKey, name: 'Eleanor Hart', jobTitle: 'Managing director', email: 'eleanor@example.com', phone: '+1 555 0100', bio: 'Leads the sales team and handles the agency’s most exceptional homes personally.' },
+  { photo: 'agentJames' as PhotoKey, name: 'James Okafor', jobTitle: 'Senior sales agent', email: 'james@example.com', phone: '+1 555 0101', bio: 'Specialist in family homes on the north side of the city.' },
+  { photo: 'agentSofia' as PhotoKey, name: 'Sofia Marin', jobTitle: 'Lettings manager', email: 'sofia@example.com', phone: '+1 555 0102', bio: 'Looks after landlords and tenants from first viewing to renewal.' },
+  { photo: 'agentDaniel' as PhotoKey, name: 'Daniel Reyes', jobTitle: 'Valuer', email: 'daniel@example.com', phone: '+1 555 0103', bio: 'Prices homes with evidence from every sale on the street.' },
 ]
 
 type Demo = {
@@ -189,7 +189,9 @@ async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, 
   const photo = PHOTOS[key]
   if (!photo) return undefined
   try {
-    const res = await fetch(`${photo.url}?w=1920&q=80&fm=jpg&fit=max`, { redirect: 'follow' })
+    // Headshots are cropped around the face to a 4:5 portrait so the team looks consistent.
+    const params = 'portrait' in photo ? 'w=900&h=1125&fit=crop&crop=faces&q=80&fm=jpg' : 'w=1920&q=80&fm=jpg&fit=max'
+    const res = await fetch(`${photo.url}?${params}`, { redirect: 'follow' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = Buffer.from(await res.arrayBuffer())
     const doc = await payload.create({
@@ -230,8 +232,9 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
 
   const cache = new Map<PhotoKey, number>()
   const agentIds: number[] = []
-  for (const a of AGENTS) {
-    const doc = await payload.create({ collection: 'agents', data: a, req })
+  for (const { photo, ...a } of AGENTS) {
+    const photoId = await fetchPhoto(payload, photo, cache)
+    const doc = await payload.create({ collection: 'agents', data: { ...a, photo: photoId }, req })
     agentIds.push(doc.id as number)
   }
 

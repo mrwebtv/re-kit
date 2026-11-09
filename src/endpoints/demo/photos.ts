@@ -27,6 +27,10 @@ export const PHOTOS = {
   bedroom4: { url: u('1533024115551-3925e1b0cd51'), alt: 'Guest bedroom', credit: 'Ömürden Cengiz' },
   bathroom1: { url: u('1613849925594-415a32298f54'), alt: 'Bathroom with freestanding bath', credit: 'Zac Gudakov' },
   bathroom2: { url: u('1682888818704-6dc91e9d7532'), alt: 'Bathroom with double basin', credit: 'Zac Gudakov' },
+  agentEleanor: { url: u('1573496359142-b8d87734a5a2'), alt: 'Eleanor Hart', credit: 'Christina @ wocintechchat.com', portrait: true },
+  agentJames: { url: u('1614023342667-6f060e9d1e04'), alt: 'James Okafor', credit: 'Olawale Munna', portrait: true },
+  agentSofia: { url: u('1604904612715-47bf9d9bc670'), alt: 'Sofia Marin', credit: 'Phạm Duy Quang', portrait: true },
+  agentDaniel: { url: u('1500648767791-00dcc994a43e'), alt: 'Daniel Reyes', credit: 'Jurica Koletić', portrait: true },
 } as const
 
 export type PhotoKey = keyof typeof PHOTOS
