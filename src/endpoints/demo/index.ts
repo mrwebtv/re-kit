@@ -1,4 +1,4 @@
-import type { Endpoint, Payload, PayloadRequest } from 'payload'
+import type { CollectionSlug, Endpoint, Payload, PayloadRequest, Where } from 'payload'
 import { PHOTOS, type PhotoKey } from './photos'
 import { PAGE_TEMPLATES, POST_TEMPLATES } from '../../blocks/site/templates'
 import { h, p as para, rt } from '../../lib/lexical'
@@ -91,7 +91,7 @@ const DEMO: Demo[] = [
       'Three bedroom suites, a separate media room and two parking spaces complete the picture. The concierge and gym are on the ground floor.',
     ],
     features: ['Wraparound terraces', 'Views across the harbour', '24-hour concierge', 'Two parking spaces', 'Residents’ gym'],
-    town: 'Old Harbour', line1: 'Harbour Building, Quay Street', lat: 32.7157, lng: -117.1729, photos: ['pool1', 'living3', 'kitchen3', 'bedroom3', 'bathroom2'],
+    town: 'Old Harbour', line1: 'Harbour Building, Quay Street', lat: 32.7157, lng: -117.1729, photos: ['living4', 'living3', 'kitchen3', 'bedroom3', 'bathroom2', 'pool1'],
     custom: [['Sea view'], ['Parking spaces', '2']], yearBuilt: 2016,
   },
   {
@@ -210,25 +210,40 @@ async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, 
 const DEMO_SLUGS = ['riverside-quarter', 'riverside-quarter-apartment-2a', 'riverside-quarter-penthouse-5', 'the-old-rectory', 'linden-house', 'harbour-view-penthouse', 'villa-serena', '12-maple-terrace', 'orchard-cottage', 'the-boathouse', 'garden-apartment-elm-court', 'palm-court-residence', 'garden-house-maple-lane']
 
 /** Removes only the demo listings, demo agents and demo photos. Your own content is untouched. */
+/** Bulk delete works in pages, so repeat until nothing matches (a reset with more than one page of demo items left some behind). */
+async function deleteAll(payload: Payload, collection: CollectionSlug, where: Where, req?: PayloadRequest) {
+  for (let i = 0; i < 50; i++) {
+    const { totalDocs } = await payload.count({ collection, where, req, overrideAccess: true })
+    if (!totalDocs) return
+    await payload.delete({ collection, where, req, overrideAccess: true })
+  }
+}
+
 async function removeDemo(payload: Payload, req?: PayloadRequest) {
   const deals = await payload.find({ collection: 'deals', where: { contactEmail: { like: '@example.com' } }, limit: 500, depth: 0, req, overrideAccess: true })
-  if (deals.docs.length) await payload.delete({ collection: 'activities', where: { deal: { in: deals.docs.map((d) => d.id) } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'deals', where: { contactEmail: { like: '@example.com' } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'properties', where: { slug: { in: DEMO_SLUGS } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'pages', where: { slug: { in: DEMO_PAGES } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'posts', where: { slug: { in: DEMO_POSTS } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'categories', where: { slug: { in: DEMO_CATS } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'property-labels', where: { name: { in: LABELS.map((l) => l.name) } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'property-fields', where: { name: { in: FIELDS.map((l) => l.name) } }, req, overrideAccess: true })
-  await payload.delete({ collection: 'agents', where: { email: { like: '@example.com' } }, req, overrideAccess: true })
+  if (deals.docs.length) await deleteAll(payload, 'activities', { deal: { in: deals.docs.map((d) => d.id) } }, req)
+  await deleteAll(payload, 'deals', { contactEmail: { like: '@example.com' } }, req)
+  await deleteAll(payload, 'properties', { slug: { in: DEMO_SLUGS } }, req)
+  await deleteAll(payload, 'pages', { slug: { in: DEMO_PAGES } }, req)
+  await deleteAll(payload, 'posts', { slug: { in: DEMO_POSTS } }, req)
+  await deleteAll(payload, 'categories', { slug: { in: DEMO_CATS } }, req)
+  // Demo labels and custom fields go too, unless one of your own listings uses them.
+  for (const [collection, names, path] of [['property-labels', LABELS.map((l) => l.name), 'labels'], ['property-fields', FIELDS.map((f) => f.name), 'customFields.field']] as const) {
+    const found = await payload.find({ collection, where: { name: { in: names } }, limit: 100, depth: 0, req, overrideAccess: true })
+    for (const d of found.docs) {
+      const used = await payload.count({ collection: 'properties', where: { [path]: { in: [d.id] } }, req, overrideAccess: true })
+      if (!used.totalDocs) await payload.delete({ collection, id: d.id, req, overrideAccess: true })
+    }
+  }
+  await deleteAll(payload, 'agents', { email: { like: '@example.com' } }, req)
   const keys = Object.keys(PHOTOS)
-  await payload.delete({ collection: 'media', where: { or: keys.map((k) => ({ filename: { like: `${k}` } })) }, req, overrideAccess: true })
+  await deleteAll(payload, 'media', { or: keys.map((k) => ({ filename: { like: `${k}` } })) }, req)
 }
 
 export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = false) {
   if (reset) await removeDemo(payload, req)
-  const existing = await payload.count({ collection: 'properties', req })
-  if (existing.totalDocs > 0) return { skipped: true, message: 'Properties already exist, nothing was added.' }
+  const existing = await payload.count({ collection: 'properties', where: { slug: { in: DEMO_SLUGS } }, req, overrideAccess: true })
+  if (existing.totalDocs > 0) return { skipped: true, message: 'The demo content is already loaded. Use Reset demo content to load it again.' }
 
   const cache = new Map<PhotoKey, number>()
   const agentIds: number[] = []
