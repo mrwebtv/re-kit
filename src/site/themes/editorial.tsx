@@ -1,26 +1,22 @@
-import Link from 'next/link'
-import { formatPrice, img } from '../data'
-import { AgentCard, Brand, BrandName, ContactLines, Facts, NAV, Photo, PropertyPhoto, SearchForm, href, statusLabel, FooterLegal, PriceLabel } from '../components/shared'
+import { Link } from '../i18n/client'
+import { img } from '../data'
+import { AgentCard, Brand, BrandName, CardBadges, CardShell, ContactLines, Facts, FooterLegal, MainNav, menuOf, NAV, Photo, PriceLabel, PropertyPhoto, SearchForm, href } from '../components/shared'
 import type { CardProps, HomeProps, ThemeKit } from './types'
-import type { SiteSetting } from '@/payload-types'
+import type { Site } from '../data'
 
-function Header({ s }: { s: SiteSetting }) {
+function Header({ s }: { s: Site }) {
   return (
     <header className="rk-header">
       <div className="rk-wrap rk-header-inner">
         <Brand s={s} />
-        <nav aria-label="Main" className="rk-nav">
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href}>{n.label}</Link>
-          ))}
-          <Link href="/valuation" className="rk-btn rk-btn-outline" style={{ minHeight: 44, padding: '0 22px' }}>Book a valuation</Link>
-        </nav>
+        <MainNav s={s} items={menuOf(s, NAV(s))} cta={{ label: s.$.t('Book a valuation'), href: '/valuation' }} ctaClass="rk-btn rk-btn-outline rk-nav-cta" />
       </div>
     </header>
   )
 }
 
-function Footer({ s }: { s: SiteSetting }) {
+function Footer({ s }: { s: Site }) {
+  const t = s.$.t
   return (
     <footer className="rk-footer">
       <div className="rk-wrap">
@@ -30,8 +26,8 @@ function Footer({ s }: { s: SiteSetting }) {
             <div className="rk-contact-lines" style={{ fontSize: 15, opacity: 0.8 }}><ContactLines s={s} /></div>
           </div>
           <div className="rk-footer-cols">
-            <div><strong>Properties</strong><Link href="/properties?mode=buy">For sale</Link><Link href="/properties?mode=rent">To let</Link></div>
-            <div><strong>Services</strong><Link href="/valuation">Valuations</Link><Link href="/agents">Our agents</Link><Link href="/contact">Contact</Link></div>
+            <div><strong>{t('Properties')}</strong><Link href="/properties?mode=buy">{t('For sale')}</Link><Link href="/properties?mode=rent">{t('To let')}</Link><Link href="/favourites">{t('Favourites')}</Link></div>
+            <div><strong>{t('Services')}</strong><Link href="/valuation">{t('Valuations')}</Link><Link href="/agents">{t('Our agents')}</Link><Link href="/contact">{t('Contact')}</Link></div>
           </div>
         </div>
         <div className="rk-footer-bottom"><FooterLegal s={s} /></div>
@@ -40,29 +36,30 @@ function Footer({ s }: { s: SiteSetting }) {
   )
 }
 
-function Card({ p, s }: CardProps) {
+function Card({ p, s, distance }: CardProps) {
   return (
     <Link href={href(p)} className="rk-card">
       <div className="rk-card-media" style={{ aspectRatio: '4 / 4.4' }}>
         <PropertyPhoto p={p} />
-        <span className="rk-badge">{statusLabel(p)}</span>
+        <CardBadges p={p} s={s} />
       </div>
       <div className="rk-card-top">
         <h3 className="rk-card-title">{p.title}</h3>
         <PriceLabel p={p} s={s} className="rk-card-price" />
       </div>
       <Facts p={p} s={s} />
+      {distance !== undefined && <span className="rk-distance">{s.$.t('{km} km away', { km: distance })}</span>}
     </Link>
   )
 }
 
-const PILLARS = [
-  { n: 'i.', title: 'Photographed properly', body: 'Every home is shot by a professional photographer, so buyers fall for it before they visit.' },
-  { n: 'ii.', title: 'One agent, start to finish', body: 'The person who values your home answers your calls, hosts the viewings and negotiates the offers.' },
-  { n: 'iii.', title: 'Buyers we already know', body: 'Registered buyers are matched to your home the day it lists.' },
-]
-
 function Home({ s, featured, agents }: HomeProps) {
+  const t = s.$.t
+  const PILLARS = [
+    { n: 'i.', title: t('Photographed properly'), body: t('Every home is shot by a professional photographer, so buyers fall for it before they visit.') },
+    { n: 'ii.', title: t('One agent, start to finish'), body: t('The person who values your home answers your calls, hosts the viewings and negotiates the offers.') },
+    { n: 'iii.', title: t('Buyers we already know'), body: t('Registered buyers are matched to your home the day it lists.') },
+  ]
   return (
     <>
       <section className="rk-wrap">
@@ -74,7 +71,7 @@ function Home({ s, featured, agents }: HomeProps) {
             <h1 className="rk-display">{s.heroHeadline}</h1>
           </div>
         </div>
-        <SearchForm className="rk-search ed-search" />
+        <SearchForm s={s} className="rk-search ed-search" />
       </section>
 
       {featured.length > 0 && (
@@ -82,13 +79,13 @@ function Home({ s, featured, agents }: HomeProps) {
           <div className="rk-wrap">
             <div className="rk-section-head">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <span className="rk-eyebrow">Selected residences</span>
-                <h2 className="rk-display">New to the market</h2>
+                <span className="rk-eyebrow">{t('Selected residences')}</span>
+                <h2 className="rk-display">{t('New to the market')}</h2>
               </div>
-              <Link href="/properties" className="rk-link">View all properties</Link>
+              <Link href="/properties" className="rk-link">{t('View all properties')}</Link>
             </div>
             <div className="rk-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
-              {featured.map((p) => <Card key={p.id} p={p} s={s} />)}
+              {featured.map((p) => <CardShell key={p.id} p={p} s={s}><Card p={p} s={s} /></CardShell>)}
             </div>
           </div>
         </section>
@@ -98,12 +95,12 @@ function Home({ s, featured, agents }: HomeProps) {
         <div className="ed-sell">
           <Photo src={img(s.sellImage, 'large')} alt="" className="ed-sell-photo" />
           <div className="ed-sell-copy">
-            <span className="rk-eyebrow" style={{ color: '#C9AE84' }}>Selling with us</span>
-            <h2 className="rk-display" style={{ fontSize: 'clamp(40px, 4.4vw, 56px)' }}>What is your home <em>really</em> worth?</h2>
-            <p>An agent who knows your street visits, walks every room and gives you a written valuation within 48 hours. No obligation, no pressure.</p>
+            <span className="rk-eyebrow" style={{ color: '#C9AE84' }}>{t('Selling with us')}</span>
+            <h2 className="rk-display" style={{ fontSize: 'clamp(40px, 4.4vw, 56px)' }}>{t('What is your home really worth?')}</h2>
+            <p>{t('An agent who knows your street visits, walks every room and gives you a written valuation within 48 hours. No obligation, no pressure.')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-              <Link href="/valuation" className="rk-btn" style={{ background: '#F6F4EF', color: '#1B1B19' }}>Book a free valuation</Link>
-              <Link href="/contact" className="rk-btn" style={{ color: '#F6F4EF', padding: '0 4px', borderBottom: '1px solid #6B665D' }}>Talk to an agent</Link>
+              <Link href="/valuation" className="rk-btn" style={{ background: '#F6F4EF', color: '#1B1B19' }}>{t('Book a free valuation')}</Link>
+              <Link href="/contact" className="rk-btn" style={{ color: '#F6F4EF', padding: '0 4px', borderBottom: '1px solid #6B665D' }}>{t('Talk to an agent')}</Link>
             </div>
           </div>
         </div>
@@ -126,10 +123,10 @@ function Home({ s, featured, agents }: HomeProps) {
           <div className="rk-wrap">
             <div className="rk-section-head">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <span className="rk-eyebrow">Our agents</span>
-                <h2 className="rk-display">The people behind every sale</h2>
+                <span className="rk-eyebrow">{t('Our agents')}</span>
+                <h2 className="rk-display">{t('The people behind every sale')}</h2>
               </div>
-              <Link href="/agents" className="rk-link">Meet the team</Link>
+              <Link href="/agents" className="rk-link">{t('Meet the team')}</Link>
             </div>
             <div className="rk-agents">{agents.slice(0, 4).map((a) => <AgentCard key={a.id} a={a} />)}</div>
           </div>

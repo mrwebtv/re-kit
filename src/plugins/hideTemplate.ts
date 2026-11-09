@@ -1,7 +1,7 @@
 import type { Plugin } from 'payload'
 
 /** Template parts this site does not use. Kept in the schema, hidden from the admin. */
-const HIDDEN = new Set(['pages', 'posts', 'categories', 'forms', 'form-submissions', 'search', 'redirects', 'header', 'footer'])
+const HIDDEN = new Set(['forms', 'form-submissions', 'search', 'redirects', 'header', 'footer'])
 
 export const hideTemplateLeftovers: Plugin = (config) => ({
   ...config,

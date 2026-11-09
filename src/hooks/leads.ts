@@ -1,4 +1,4 @@
-import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, Field } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeValidateHook, Field, Payload, Where } from 'payload'
 import { APIError } from 'payload'
 import { esc, getSettingsAdmin, layout, sendMail } from '@/lib/mailer'
 
@@ -15,7 +15,7 @@ export const requireConsent: CollectionBeforeValidateHook = ({ operation, req, d
   return data
 }
 
-const TYPE: Record<string, string> = { property: 'Property enquiry', valuation: 'Valuation request', contact: 'General enquiry' }
+const TYPE: Record<string, string> = { property: 'Property enquiry', valuation: 'Valuation request', contact: 'General enquiry', signup: 'Email signup' }
 
 /** On a new lead: email the agent (or leads inbox), confirm to the visitor, and post to the CRM webhook if enabled. */
 export const handleNewLead =
@@ -29,18 +29,29 @@ export const handleNewLead =
         const s = await getSettingsAdmin(payload)
         let agentEmail: string | undefined
         let agentName: string | undefined
+        let agentId: number | undefined
         let propertyTitle = ''
         let propertyUrl = ''
+        let propertyId: number | undefined
+        let price: number | undefined
         if (doc.property) {
           const property = await payload.findByID({ collection: 'properties', id: typeof doc.property === 'object' ? doc.property.id : doc.property, depth: 1, overrideAccess: true })
           propertyTitle = property.title
+          propertyId = property.id
+          price = property.price
           propertyUrl = `${process.env.SITE_URL || ''}/properties/${property.slug}`
           if (property.agent && typeof property.agent === 'object') {
             agentEmail = property.agent.email
             agentName = property.agent.name
+            agentId = property.agent.id
           }
         }
         const label = kind === 'viewing' ? 'Viewing request' : TYPE[doc.type] || 'Enquiry'
+        await recordDeal(payload, { kind, doc, label, propertyId, propertyTitle, agentId, price }).catch((err) => payload.logger.error({ err, msg: 'Could not create CRM deal' }))
+        if (doc.type === 'signup') {
+          if (s.leadsInbox || s.email) await sendMail(payload, { to: (s.leadsInbox || s.email)!, subject: `New email signup: ${doc.email}`, html: layout(s, `<p>${esc(doc.email)} signed up on the website.</p>`) }, s)
+          return
+        }
         const fallback = s.leadsInbox || s.email || undefined
         const to = Array.from(new Set([agentEmail || fallback, s.copyAllLeads ? fallback : undefined].filter(Boolean))) as string[]
         const rows = Object.entries({
@@ -96,3 +107,39 @@ export const handleNewLead =
     }, 0)
     return doc
   }
+
+type DealInput = { kind: 'enquiry' | 'viewing'; doc: Record<string, any>; label: string; propertyId?: number; propertyTitle: string; agentId?: number; price?: number }
+
+/** Every lead lands in the CRM: a new deal, or a new activity on the open deal for the same person and property. */
+async function recordDeal(payload: Payload, d: DealInput) {
+  if (d.doc.type === 'signup') return
+  const leadRef = { relationTo: d.kind === 'viewing' ? 'viewings' : 'enquiries', value: d.doc.id } as const
+  const and: Where[] = [{ contactEmail: { equals: d.doc.email } }, { stage: { not_in: ['completed', 'lost'] } }]
+  if (d.propertyId) and.push({ property: { equals: d.propertyId } })
+  const open = await payload.find({ collection: 'deals', where: { and }, limit: 1, depth: 0, overrideAccess: true })
+  const when = d.doc.preferredDate ? ` for ${new Date(d.doc.preferredDate).toUTCString().slice(0, 22)}` : ''
+  const summary = `${d.label}${when}`
+  if (open.docs[0]) {
+    const deal = open.docs[0]
+    await payload.create({ collection: 'activities', data: { deal: deal.id, type: d.kind === 'viewing' ? 'viewing' : 'email', summary, details: d.doc.message || undefined }, overrideAccess: true })
+    if (d.kind === 'viewing' && deal.stage === 'new') await payload.update({ collection: 'deals', id: deal.id, data: { stage: 'viewing' }, overrideAccess: true })
+    return
+  }
+  const deal = await payload.create({
+    collection: 'deals',
+    data: {
+      title: `${d.doc.name}${d.propertyTitle ? ` · ${d.propertyTitle}` : d.doc.propertyAddress ? ` · ${d.doc.propertyAddress}` : ''}`,
+      stage: d.kind === 'viewing' ? 'viewing' : 'new',
+      contactName: d.doc.name,
+      contactEmail: d.doc.email,
+      contactPhone: d.doc.phone || undefined,
+      property: d.propertyId,
+      agent: d.agentId,
+      value: d.price,
+      source: d.kind === 'viewing' ? 'viewing' : d.doc.type,
+      lead: leadRef,
+    },
+    overrideAccess: true,
+  })
+  await payload.create({ collection: 'activities', data: { deal: deal.id, type: d.kind === 'viewing' ? 'viewing' : 'email', summary, details: d.doc.message || undefined }, overrideAccess: true })
+}

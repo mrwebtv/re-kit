@@ -15,7 +15,7 @@ export const Agents: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true },
     slugField({ useAsSlug: 'name', required: false }),
-    { name: 'jobTitle', type: 'text' },
+    { name: 'jobTitle', type: 'text', localized: true },
     { name: 'photo', type: 'upload', relationTo: 'media' },
     {
       type: 'row',
@@ -24,6 +24,14 @@ export const Agents: CollectionConfig = {
         { name: 'phone', type: 'text' },
       ],
     },
-    { name: 'bio', type: 'textarea' },
+    { name: 'bio', type: 'textarea', localized: true },
+    {
+      type: 'row',
+      fields: [
+        { name: 'linkedin', type: 'text' },
+        { name: 'instagram', type: 'text' },
+        { name: 'whatsapp', type: 'text', admin: { description: 'Number with country code, e.g. +353871234567' } },
+      ],
+    },
   ],
 }

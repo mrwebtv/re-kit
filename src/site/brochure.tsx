@@ -4,7 +4,7 @@ import React from 'react'
 import { Document, Image, Link, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer'
 import QRCode from 'qrcode'
 import type { Agent, Media, Property, SiteSetting } from '@/payload-types'
-import { formatArea, formatPrice, place, qualifier, STATUS_LABEL, TYPE_LABEL } from './data'
+import { formatArea, formatPrice, place, qualifier, STATUS_LABEL, TYPE_LABEL, type Site } from './data'
 import { getTheme } from './themes'
 
 const MEDIA_DIR = path.resolve(process.cwd(), 'public/media')
@@ -35,7 +35,8 @@ function paragraphs(rt: unknown): string[] {
   return out
 }
 
-export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: string) {
+export async function renderBrochure(p: Property, s: SiteSetting | Site, listingUrl: string) {
+  const t = (k: string) => ('$' in s && s.$ ? s.$.t(k) : k)
   const theme = getTheme(s.theme)
   const accent = s.accentColor || theme.defaultAccent
   const serif = theme.id === 'editorial' || theme.id === 'dark'
@@ -69,16 +70,17 @@ export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: st
   })
 
   const gallery = (p.gallery || []) as (number | Media)[]
-  const imgs = gallery.map((m, i) => photoFile(m, i === 0 ? 'large' : 'medium')).filter(Boolean) as Buffer[]
+  const local = gallery.map((m, i) => photoFile(m, i === 0 ? 'large' : 'medium')).filter(Boolean) as Buffer[]
+  const imgs: (Buffer | string)[] = local.length ? local : (p.externalPhotos || []).map((x) => x.url).filter((u) => /\.(jpe?g|png)(\?|$)/i.test(u) || !/\.\w{3,4}(\?|$)/.test(u)).slice(0, 5)
   const plan = ((p.floorPlans || []) as (number | Media)[]).map((m) => photoFile(m)).find(Boolean)
   const agent = p.agent && typeof p.agent === 'object' ? (p.agent as Agent) : null
   const qr = await QRCode.toDataURL(listingUrl, { margin: 0, width: 220, color: { dark: ink, light: '#f4f2ed' } })
   const facts = [
-    ['Bedrooms', p.bedrooms],
-    ['Bathrooms', p.bathrooms],
-    ['Floor area', formatArea(p.floorArea, s).replace('m²', 'sq m')],
-    ['Type', p.propertyType ? TYPE_LABEL[p.propertyType] : ''],
-    ['Energy', p.energyRating],
+    [t('Bedrooms'), p.bedrooms],
+    [t('Bathrooms'), p.bathrooms],
+    [t('Floor area'), formatArea(p.floorArea, s).replace('m²', 'sq m')],
+    [t('Type'), p.propertyType ? t(TYPE_LABEL[p.propertyType]!) : ''],
+    [t('Energy rating'), p.energyRating || (p.energyClass ? p.energyClass.replace('plus', '+') : '')],
   ].filter(([, v]) => v)
   const desc = paragraphs(p.description)
   const contact = [s.phone, s.email].filter(Boolean).join('  ·  ')
@@ -103,7 +105,7 @@ export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: st
         {imgs[0] ? <Image src={imgs[0]} style={st.hero} /> : <View style={st.ph} />}
         <Text style={st.title}>{p.title}</Text>
         <View style={st.priceRow}>
-          <Text style={{ color: muted }}>{[place(p), STATUS_LABEL[p.status]].filter(Boolean).join('  ·  ')}</Text>
+          <Text style={{ color: muted }}>{[place(p), t(STATUS_LABEL[p.status] || ''), p.reference].filter(Boolean).join('  ·  ')}</Text>
           <Text style={st.price}>{qualifier(p) ? `${qualifier(p)} ` : ''}{formatPrice(p, s)}</Text>
         </View>
         {facts.length > 0 && (
@@ -129,13 +131,13 @@ export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: st
         <Head />
         {desc.length > 0 && (
           <View>
-            <Text style={st.h2}>About this home</Text>
+            <Text style={st.h2}>{t('About this home')}</Text>
             {desc.map((t, i) => <Text key={i} style={st.p}>{t}</Text>)}
           </View>
         )}
         {p.features && p.features.length > 0 && (
           <View style={{ marginTop: 10 }}>
-            <Text style={st.h2}>Features</Text>
+            <Text style={st.h2}>{t('Features')}</Text>
             <View style={st.feats}>
               {p.features.map((f, i) => <Text key={i} style={st.feat}>{`–  ${f.feature}`}</Text>)}
             </View>
@@ -148,13 +150,13 @@ export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: st
         )}
         {plan && (
           <View wrap={false} style={{ marginTop: 14 }}>
-            <Text style={st.h2}>Floor plan</Text>
+            <Text style={st.h2}>{t('Floor plan')}</Text>
             <Image src={plan} style={st.plan} />
           </View>
         )}
         <View style={st.agent} wrap={false}>
           <View style={{ flex: 1, paddingRight: 16 }}>
-            <Text style={st.small}>Arrange a viewing</Text>
+            <Text style={st.small}>{t('Arrange a viewing')}</Text>
             <Text style={{ fontFamily: display, fontSize: 16, marginTop: 4 }}>{agent?.name || s.agencyName}</Text>
             {agent?.jobTitle && <Text style={{ color: muted }}>{agent.jobTitle}</Text>}
             <Text style={{ marginTop: 6 }}>{[agent?.phone || s.phone, agent?.email || s.email].filter(Boolean).join('  ·  ')}</Text>
@@ -163,7 +165,7 @@ export async function renderBrochure(p: Property, s: SiteSetting, listingUrl: st
           </View>
           <View style={{ alignItems: 'center' }}>
             <Image src={qr} style={{ width: 84, height: 84 }} />
-            <Text style={{ fontSize: 7, color: muted, marginTop: 4 }}>Scan for photos and booking</Text>
+            <Text style={{ fontSize: 7, color: muted, marginTop: 4 }}>{t('Scan for photos and booking')}</Text>
           </View>
         </View>
         <Footer n={2} />

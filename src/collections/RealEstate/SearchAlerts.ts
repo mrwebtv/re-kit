@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { APIError } from 'payload'
 import crypto from 'crypto'
 import { adminOnly } from '../../access/roles'
-import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
+import { captchaField, honeypotField, rateLimitPublic, verifyCaptcha } from '../../hooks/antiSpam'
 
 export const SearchAlerts: CollectionConfig = {
   slug: 'search-alerts',
@@ -12,6 +12,7 @@ export const SearchAlerts: CollectionConfig = {
   hooks: {
     beforeValidate: [
       rateLimitPublic,
+      verifyCaptcha,
       async ({ operation, req, data }) => {
         if (operation !== 'create' || req.user || req.payloadAPI === 'local' || !data) return data
         const s = await req.payload.findGlobal({ slug: 'site-settings', overrideAccess: true })
@@ -33,5 +34,6 @@ export const SearchAlerts: CollectionConfig = {
     { name: 'lastSentAt', type: 'date', admin: { readOnly: true } },
     { name: 'token', type: 'text', index: true, admin: { hidden: true }, access: { read: () => false } },
     honeypotField,
+    captchaField,
   ],
 }

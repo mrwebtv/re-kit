@@ -10,7 +10,18 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
-import { Agents, Enquiries, Properties, SearchAlerts, Viewings } from './collections/RealEstate'
+import { Agents, Enquiries, Properties, PropertyFields, PropertyLabels, SearchAlerts, Viewings } from './collections/RealEstate'
+import { Activities, Deals, PageStats } from './collections/CRM'
+import { siteEndpoints } from './endpoints/site'
+import { LOCALES, DEFAULT_LOCALE } from './i18n/locales'
+import { en } from '@payloadcms/translations/languages/en'
+import { fr } from '@payloadcms/translations/languages/fr'
+import { es } from '@payloadcms/translations/languages/es'
+import { de } from '@payloadcms/translations/languages/de'
+import { it } from '@payloadcms/translations/languages/it'
+import { pt } from '@payloadcms/translations/languages/pt'
+import { nl } from '@payloadcms/translations/languages/nl'
+import { ar } from '@payloadcms/translations/languages/ar'
 import { siteSettingsEmailAdapter } from './lib/emailAdapter'
 import { backupsEndpoint, healthEndpoint, testEmailEndpoint } from './endpoints/admin'
 import { startMaintenance } from './lib/maintenance'
@@ -36,6 +47,12 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
+      afterNavLinks: ['@/components/admin/NavLinks#NavLinks'],
+      views: {
+        pipeline: { Component: '@/components/admin/Pipeline#PipelineView', path: '/pipeline' },
+        analytics: { Component: '@/components/admin/Analytics#AnalyticsView', path: '/analytics' },
+        importListings: { Component: '@/components/admin/Import#ImportView', path: '/import' },
+      },
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -71,11 +88,17 @@ export default buildConfig({
     // Runs pending migrations automatically when the app starts in production
     prodMigrations: migrations,
   }),
-  collections: [Properties, Agents, Enquiries, Viewings, SearchAlerts, Media, Users, Pages, Posts, Categories],
+  collections: [Properties, PropertyLabels, PropertyFields, Agents, Enquiries, Viewings, SearchAlerts, Deals, Activities, PageStats, Pages, Posts, Categories, Media, Users],
+  localization: {
+    locales: LOCALES.map((l) => ({ code: l.code, label: l.label, rtl: 'rtl' in l ? l.rtl : false })),
+    defaultLocale: DEFAULT_LOCALE,
+    fallback: true,
+  },
+  i18n: { supportedLanguages: { en, fr, es, de, it, pt, nl, ar }, fallbackLanguage: 'en' },
   email: siteSettingsEmailAdapter,
   cors: [getServerSideURL()].filter(Boolean),
   globals: [SiteSettings, Header, Footer],
-  endpoints: [seedDemoEndpoint, testEmailEndpoint, healthEndpoint, backupsEndpoint],
+  endpoints: [seedDemoEndpoint, testEmailEndpoint, healthEndpoint, backupsEndpoint, ...siteEndpoints],
   plugins: [...plugins, hideTemplateLeftovers],
   hooks: {
     afterError: [

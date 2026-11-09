@@ -1,5 +1,7 @@
 import type { Endpoint, Payload, PayloadRequest } from 'payload'
 import { PHOTOS, type PhotoKey } from './photos'
+import { PAGE_TEMPLATES, POST_TEMPLATES } from '../../blocks/site/templates'
+import { h, p as para, rt } from '../../lib/lexical'
 
 type Lexical = { root: Record<string, unknown> }
 
@@ -51,6 +53,11 @@ type Demo = {
   featured?: boolean
   agent: number
   photos: PhotoKey[]
+  labels?: string[]
+  custom?: [string, string?][]
+  energyClass?: string
+  yearBuilt?: number
+  parent?: string
 }
 
 const DEMO: Demo[] = [
@@ -63,6 +70,7 @@ const DEMO: Demo[] = [
     ],
     features: ['Pool and stone terrace', 'Floor-to-ceiling glazing', 'Open-plan kitchen with island', 'Cedar ceilings', 'Main suite with dressing room', 'Double garage'],
     town: 'Riverside', line1: '4 Palm Court', lat: 32.7505, lng: -117.2195, photos: ['exterior1', 'living1', 'kitchen1', 'bedroom1', 'bathroom1'], openHouse: true,
+    labels: ['Exclusive'], custom: [['Swimming pool'], ['Parking spaces', '2']], energyClass: 'A', yearBuilt: 2021,
   },
   {
     title: 'Linden House', status: 'for-sale', propertyType: 'house', price: 1240000, bedrooms: 4, bathrooms: 3, floorArea: 285, energyRating: 'A3', featured: true, agent: 1,
@@ -73,6 +81,7 @@ const DEMO: Demo[] = [
     ],
     features: ['South-facing garden', 'Underfloor heating', 'Home office', 'Electric car charger', 'Walk to schools and park'],
     town: 'Hillcrest', line1: '8 Linden Avenue', lat: 32.7462, lng: -117.1640, photos: ['exterior2', 'kitchen2', 'living2', 'bedroom2'],
+    labels: ['New build'], custom: [['Garden'], ['Parking spaces', '1']], energyClass: 'B', yearBuilt: 2019,
   },
   {
     title: 'Harbour View Penthouse', status: 'for-sale', propertyType: 'apartment', price: 2350000, bedrooms: 3, bathrooms: 3, floorArea: 220, energyRating: 'A2', featured: true, agent: 0,
@@ -83,6 +92,7 @@ const DEMO: Demo[] = [
     ],
     features: ['Wraparound terraces', 'Views across the harbour', '24-hour concierge', 'Two parking spaces', 'Residents’ gym'],
     town: 'Old Harbour', line1: 'Harbour Building, Quay Street', lat: 32.7157, lng: -117.1729, photos: ['pool1', 'living3', 'kitchen3', 'bedroom3', 'bathroom2'],
+    custom: [['Sea view'], ['Parking spaces', '2']], yearBuilt: 2016,
   },
   {
     title: 'Villa Serena', status: 'for-sale', propertyType: 'house', price: 6400000, bedrooms: 6, bathrooms: 6, floorArea: 620, energyRating: 'A1', featured: true, agent: 0,
@@ -93,6 +103,7 @@ const DEMO: Demo[] = [
     ],
     features: ['Infinity pool', 'Guest house', 'Sea views from every main room', 'Gated, private plot', 'Wine room'],
     town: 'Cliffside', line1: 'Cliff Road', lat: 32.8328, lng: -117.2713, photos: ['pool2', 'exterior3', 'living4', 'bedroom4'],
+    labels: ['Exclusive'], custom: [['Swimming pool'], ['Sea view']], energyClass: 'Aplus', yearBuilt: 2018,
   },
   {
     title: 'Garden House, Maple Lane', status: 'for-sale', propertyType: 'house', price: 1100000, bedrooms: 4, bathrooms: 2, floorArea: 198, energyRating: 'C1', agent: 1,
@@ -102,6 +113,7 @@ const DEMO: Demo[] = [
     ],
     features: ['Planted front garden', 'Four bedrooms', 'Close to the station', 'Off-street parking'],
     town: 'Northgate', line1: '12 Maple Lane', lat: 32.7641, lng: -117.1430, photos: ['exterior4', 'kitchen3', 'living5'],
+    labels: ['Price reduced'], custom: [['Garden']], yearBuilt: 1962,
   },
   {
     title: 'The Old Rectory', status: 'sale-agreed', propertyType: 'house', price: 895000, bedrooms: 3, bathrooms: 2, floorArea: 165, energyRating: 'B3', agent: 3,
@@ -109,6 +121,7 @@ const DEMO: Demo[] = [
     description: ['Original sash windows and shutters, a kitchen at the back opening onto the garden, and three bedrooms upstairs.'],
     features: ['Walled front garden', 'Original sash windows', 'Period fireplaces'],
     town: 'Westfield', line1: 'Church Lane', lat: 32.7395, lng: -117.2398, photos: ['exterior5', 'kitchen2', 'bedroom1'],
+    energyClass: 'D', yearBuilt: 1890,
   },
   {
     title: 'The Boathouse', status: 'to-let', propertyType: 'house', price: 4200, pricePeriod: 'month', bedrooms: 3, bathrooms: 2, floorArea: 142, energyRating: 'B1', agent: 2,
@@ -124,7 +137,43 @@ const DEMO: Demo[] = [
     features: ['Private garden', 'Secure parking', 'Lift', 'Unfurnished'],
     town: 'Hillcrest', line1: 'Elm Court', lat: 32.7512, lng: -117.1555, photos: ['living1', 'kitchen1', 'bathroom1'],
   },
+  {
+    title: 'Riverside Quarter', status: 'for-sale', propertyType: 'development', price: 690000, priceQualifier: 'from', bedrooms: 3, bathrooms: 2, floorArea: 140, energyRating: 'A2', agent: 1,
+    summary: 'A new development of twelve apartments by the river, with the first homes ready in spring.',
+    description: ['Riverside Quarter is a collection of twelve apartments and penthouses with balconies over the water, a residents’ garden and underground parking.', 'Choose from two and three bedroom homes, all with A-rated energy performance.'],
+    features: ['River views', 'Residents’ garden', 'Underground parking', 'A-rated homes'],
+    town: 'Riverside', line1: 'River Walk', lat: 32.7560, lng: -117.2150, photos: ['exterior2', 'living3', 'kitchen1'], labels: ['New build'], energyClass: 'A', yearBuilt: 2027,
+  },
+  {
+    title: 'Riverside Quarter, Apartment 2A', status: 'for-sale', propertyType: 'apartment', price: 690000, bedrooms: 2, bathrooms: 2, floorArea: 92, energyRating: 'A2', agent: 1, parent: 'Riverside Quarter',
+    summary: 'A two-bedroom apartment on the second floor with a balcony over the river.',
+    description: ['Two double bedrooms, two bathrooms and an open-plan living room opening onto a balcony with river views.'],
+    features: ['Balcony', 'River views', 'Parking space'],
+    town: 'Riverside', line1: 'River Walk', lat: 32.7561, lng: -117.2151, photos: ['living3', 'kitchen1', 'bedroom3'], labels: ['New build'], custom: [['Parking spaces', '1']], energyClass: 'A', yearBuilt: 2027,
+  },
+  {
+    title: 'Riverside Quarter, Penthouse 5', status: 'sale-agreed', propertyType: 'apartment', price: 1150000, bedrooms: 3, bathrooms: 3, floorArea: 150, energyRating: 'A2', agent: 1, parent: 'Riverside Quarter',
+    summary: 'The top-floor penthouse with a roof terrace.',
+    description: ['Three bedroom suites and a private roof terrace looking up and down the river.'],
+    features: ['Roof terrace', 'Two parking spaces'],
+    town: 'Riverside', line1: 'River Walk', lat: 32.7562, lng: -117.2149, photos: ['living4', 'bedroom4', 'bathroom2'], labels: ['New build'], custom: [['Parking spaces', '2']], energyClass: 'A', yearBuilt: 2027,
+  },
 ]
+
+const LABELS = [
+  { name: 'New build', color: '#1D4ED8', icon: 'new' },
+  { name: 'Price reduced', color: '#B42318', icon: 'star' },
+  { name: 'Exclusive', color: '#8A6A3F', icon: 'star' },
+]
+const FIELDS = [
+  { name: 'Swimming pool', icon: 'pool', showOnCard: true },
+  { name: 'Parking spaces', icon: 'parking', unit: '' },
+  { name: 'Sea view', icon: 'sea', showOnCard: true },
+  { name: 'Garden', icon: 'garden' },
+]
+const DEMO_PAGES = ['about-us', 'sell-your-home', 'living-in-hillcrest']
+const DEMO_POSTS = ['autumn-market-update', 'new-office-opening', 'first-time-buyer-guide']
+const DEMO_CATS = ['news', 'market-updates', 'guides']
 
 function nextSaturday() {
   const d = new Date()
@@ -156,11 +205,19 @@ async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, 
   }
 }
 
-const DEMO_SLUGS = ['the-old-rectory', 'linden-house', 'harbour-view-penthouse', 'villa-serena', '12-maple-terrace', 'orchard-cottage', 'the-boathouse', 'garden-apartment-elm-court', 'palm-court-residence', 'garden-house-maple-lane']
+const DEMO_SLUGS = ['riverside-quarter', 'riverside-quarter-apartment-2a', 'riverside-quarter-penthouse-5', 'the-old-rectory', 'linden-house', 'harbour-view-penthouse', 'villa-serena', '12-maple-terrace', 'orchard-cottage', 'the-boathouse', 'garden-apartment-elm-court', 'palm-court-residence', 'garden-house-maple-lane']
 
 /** Removes only the demo listings, demo agents and demo photos. Your own content is untouched. */
 async function removeDemo(payload: Payload, req?: PayloadRequest) {
+  const deals = await payload.find({ collection: 'deals', where: { contactEmail: { like: '@example.com' } }, limit: 500, depth: 0, req, overrideAccess: true })
+  if (deals.docs.length) await payload.delete({ collection: 'activities', where: { deal: { in: deals.docs.map((d) => d.id) } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'deals', where: { contactEmail: { like: '@example.com' } }, req, overrideAccess: true })
   await payload.delete({ collection: 'properties', where: { slug: { in: DEMO_SLUGS } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'pages', where: { slug: { in: DEMO_PAGES } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'posts', where: { slug: { in: DEMO_POSTS } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'categories', where: { slug: { in: DEMO_CATS } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'property-labels', where: { name: { in: LABELS.map((l) => l.name) } }, req, overrideAccess: true })
+  await payload.delete({ collection: 'property-fields', where: { name: { in: FIELDS.map((l) => l.name) } }, req, overrideAccess: true })
   await payload.delete({ collection: 'agents', where: { email: { like: '@example.com' } }, req, overrideAccess: true })
   const keys = Object.keys(PHOTOS)
   await payload.delete({ collection: 'media', where: { or: keys.map((k) => ({ filename: { like: `${k}` } })) }, req, overrideAccess: true })
@@ -177,6 +234,18 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
     const doc = await payload.create({ collection: 'agents', data: a, req })
     agentIds.push(doc.id as number)
   }
+
+  const labelIds: Record<string, number> = {}
+  for (const l of LABELS) {
+    const found = await payload.find({ collection: 'property-labels', where: { name: { equals: l.name } }, limit: 1, req, overrideAccess: true })
+    labelIds[l.name] = found.docs[0]?.id ?? (await payload.create({ collection: 'property-labels', data: { ...l, icon: l.icon as never, filterable: true }, req, overrideAccess: true })).id
+  }
+  const fieldIds: Record<string, number> = {}
+  for (const f of FIELDS) {
+    const found = await payload.find({ collection: 'property-fields', where: { name: { equals: f.name } }, limit: 1, req, overrideAccess: true })
+    fieldIds[f.name] = found.docs[0]?.id ?? (await payload.create({ collection: 'property-fields', data: { ...f, icon: f.icon as never }, req, overrideAccess: true })).id
+  }
+  const created: Record<string, number> = {}
 
   let photosOk = 0
   for (const p of DEMO) {
@@ -212,8 +281,60 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
         lng: p.lng,
         featured: Boolean(p.featured),
         agent: agentIds[p.agent],
+        labels: (p.labels || []).map((n) => labelIds[n]!).filter(Boolean),
+        customFields: (p.custom || []).map(([name, value]) => ({ field: fieldIds[name]!, value: value || undefined })),
+        energyClass: (p.energyClass as never) || undefined,
+        yearBuilt: p.yearBuilt,
+        parent: p.parent ? created[p.parent] : undefined,
       },
+    }).then((doc) => (created[p.title] = doc.id))
+  }
+
+  /* Pages from the ready-made templates, with demo photos dropped in. */
+  const pagePhotos = [await fetchPhoto(payload, 'living2', cache), await fetchPhoto(payload, 'exterior3', cache), await fetchPhoto(payload, 'kitchen2', cache)].filter(Boolean) as number[]
+  const withImages = (layout: Record<string, unknown>[], town?: string) => {
+    let i = 0
+    const json = JSON.stringify(layout).replace(/Area name/g, town || 'Area name')
+    return (JSON.parse(json) as Record<string, unknown>[]).map((b) => {
+      if (['hero', 'imageText', 'ctaBanner'].includes(b.blockType as string) && !b.image && b.style !== 'minimal') return { ...b, image: pagePhotos[i++ % pagePhotos.length] }
+      if (b.blockType === 'gallery') return { ...b, images: pagePhotos }
+      return b
     })
+  }
+  const pages: [string, string, string, string?][] = [
+    ['About us', 'about-us', 'about'],
+    ['Sell your home', 'sell-your-home', 'sell'],
+    ['Living in Hillcrest', 'living-in-hillcrest', 'area', 'Hillcrest'],
+  ]
+  for (const [title, slug, template, town] of pages) {
+    await payload.create({ collection: 'pages', req, overrideAccess: true, data: { title, slug, _status: 'published', layout: withImages(PAGE_TEMPLATES[template]!.layout(), town) as never } })
+  }
+
+  /* Blog: categories and three articles. */
+  const cats: Record<string, number> = {}
+  for (const [title, slug] of [['News', 'news'], ['Market updates', 'market-updates'], ['Guides', 'guides']]) {
+    cats[slug!] = (await payload.create({ collection: 'categories', req, overrideAccess: true, data: { title: title!, slug } })).id
+  }
+  const day = (n: number) => new Date(Date.now() - n * 86400_000).toISOString()
+  const posts = [
+    { title: 'Autumn market update', slug: 'autumn-market-update', categories: [cats['market-updates']!], excerpt: 'Prices held steady this autumn while the number of homes for sale rose. Here is what it means for buyers and sellers.', content: POST_TEMPLATES.market!.content(), heroImage: pagePhotos[1], publishedAt: day(3) },
+    { title: 'We have opened a new office', slug: 'new-office-opening', categories: [cats.news!], excerpt: 'Our second office opens on the high street next month, with longer opening hours at weekends.', content: rt(para('Our second office opens on the high street next month. It will be open seven days a week, with viewings available until 8pm on weekdays.'), para('Drop in for a coffee and a chat about the market, or book a valuation online.')), heroImage: pagePhotos[0], publishedAt: day(10) },
+    { title: 'A first-time buyer’s guide', slug: 'first-time-buyer-guide', categories: [cats.guides!], excerpt: 'From mortgage approval to moving day: the steps, the costs and the questions to ask.', content: rt(para('Buying your first home is exciting and a little daunting. This guide takes you through each step.'), h('h2', 'Get mortgage approval first'), para('Sellers take offers more seriously when you have approval in principle.'), h('h2', 'Budget for the extras'), para('Legal fees, surveys, taxes and moving costs add up. Allow for them from the start.'), h('h2', 'View more than once'), para('Go back at a different time of day, and check the street at night.')), heroImage: pagePhotos[2], publishedAt: day(21) },
+  ]
+  for (const p of posts) {
+    await payload.create({ collection: 'posts', req, overrideAccess: true, data: { ...p, _status: 'published' } as never })
+  }
+
+  /* A few CRM deals so the pipeline board is not empty. */
+  const dealsDemo: [string, string, string, number][] = [
+    ['Anna Lindqvist', 'new', 'Palm Court Residence', 1850000],
+    ['Marcus Bell', 'viewing', 'Linden House', 1240000],
+    ['Priya Shah', 'offer', 'Harbour View Penthouse', 2300000],
+    ['Tom & Ruth Avery', 'agreed', 'The Old Rectory', 880000],
+  ]
+  for (const [name, stage, prop, value] of dealsDemo) {
+    const deal = await payload.create({ collection: 'deals', req, overrideAccess: true, data: { title: `${name} · ${prop}`, stage: stage as never, contactName: name, contactEmail: `${name.split(' ')[0]!.toLowerCase()}@example.com`, property: created[prop], value, source: 'property' } })
+    await payload.create({ collection: 'activities', req, overrideAccess: true, data: { deal: deal.id, type: 'note', summary: 'Demo deal. Delete it any time.' } })
   }
 
   const heroImage = await fetchPhoto(payload, 'exterior1', cache)
@@ -224,7 +345,7 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
     data: { ...(heroImage ? { heroImage } : {}), ...(sellImage ? { sellImage } : {}) },
   })
 
-  return { skipped: false, message: `Added ${AGENTS.length} agents, ${DEMO.length} properties and ${cache.size} photos.`, photosOk }
+  return { skipped: false, message: `Added ${AGENTS.length} agents, ${DEMO.length} properties, ${pages.length} pages, ${posts.length} articles and ${cache.size} photos.`, photosOk }
 }
 
 export const seedDemoEndpoint: Endpoint = {

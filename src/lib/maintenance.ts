@@ -1,16 +1,18 @@
 import type { Payload, Where } from 'payload'
 import { esc, getSettingsAdmin, layout, sendMail } from './mailer'
+import { mlsTick } from './mls'
+import { flush } from './stats'
 
 let started = false
 let running = false
 
-/** Hourly: delete old leads (if enabled) and send due search alerts (if enabled). */
+/** Every 15 minutes: old leads, search alerts, MLS sync when due, visit stats. */
 export function startMaintenance(payload: Payload) {
   if (started || process.env.NEXT_PHASE === 'phase-production-build') return
   started = true
   const tick = () => runMaintenance(payload).catch((err) => payload.logger.error({ err, msg: 'Maintenance failed' }))
   setTimeout(tick, 60_000)
-  setInterval(tick, 60 * 60 * 1000).unref?.()
+  setInterval(tick, 15 * 60 * 1000).unref?.()
 }
 
 export async function runMaintenance(payload: Payload) {
@@ -26,6 +28,8 @@ export async function runMaintenance(payload: Payload) {
       }
     }
     if (s.features?.searchAlerts) await sendSearchAlerts(payload)
+    await mlsTick(payload).catch((err) => payload.logger.error({ err, msg: 'MLS sync failed' }))
+    await flush(payload)
   } finally {
     running = false
   }

@@ -68,15 +68,20 @@ export interface Config {
   blocks: {};
   collections: {
     properties: Property;
+    'property-labels': PropertyLabel;
+    'property-fields': PropertyField;
     agents: Agent;
     enquiries: Enquiry;
     viewings: Viewing;
     'search-alerts': SearchAlert;
-    media: Media;
-    users: User;
+    deals: Deal;
+    activities: Activity;
+    'page-stats': PageStat;
     pages: Page;
     posts: Post;
     categories: Category;
+    media: Media;
+    users: User;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -89,21 +94,29 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    deals: {
+      activities: 'activities';
+    };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'media';
     };
   };
   collectionsSelect: {
     properties: PropertiesSelect<false> | PropertiesSelect<true>;
+    'property-labels': PropertyLabelsSelect<false> | PropertyLabelsSelect<true>;
+    'property-fields': PropertyFieldsSelect<false> | PropertyFieldsSelect<true>;
     agents: AgentsSelect<false> | AgentsSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     viewings: ViewingsSelect<false> | ViewingsSelect<true>;
     'search-alerts': SearchAlertsSelect<false> | SearchAlertsSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
+    deals: DealsSelect<false> | DealsSelect<true>;
+    activities: ActivitiesSelect<false> | ActivitiesSelect<true>;
+    'page-stats': PageStatsSelect<false> | PageStatsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -118,7 +131,12 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('en' | 'fr' | 'es' | 'de' | 'it' | 'pt' | 'nl' | 'ar')
+    | ('en' | 'fr' | 'es' | 'de' | 'it' | 'pt' | 'nl' | 'ar')[];
   globals: {
     'site-settings': SiteSetting;
     header: Header;
@@ -129,7 +147,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'fr' | 'es' | 'de' | 'it' | 'pt' | 'nl' | 'ar';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -176,7 +194,8 @@ export interface Property {
   generateSlug?: boolean | null;
   slug?: string | null;
   status: 'for-sale' | 'sale-agreed' | 'sold' | 'to-let' | 'let';
-  propertyType?: ('house' | 'apartment' | 'townhouse' | 'bungalow' | 'site' | 'commercial') | null;
+  propertyType?:
+    ('house' | 'apartment' | 'townhouse' | 'bungalow' | 'villa' | 'site' | 'commercial' | 'development') | null;
   price: number;
   pricePeriod?: ('total' | 'month') | null;
   /**
@@ -191,10 +210,15 @@ export interface Property {
    * m²
    */
   floorArea?: number | null;
+  yearBuilt?: number | null;
   /**
-   * e.g. BER B2, EPC C
+   * Free text, e.g. BER B2
    */
   energyRating?: string | null;
+  /**
+   * Shows the EU energy scale graphic
+   */
+  energyClass?: ('Aplus' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G') | null;
   summary?: string | null;
   description?: {
     root: {
@@ -217,6 +241,19 @@ export interface Property {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Your own details, defined under Real Estate > Custom fields.
+   */
+  customFields?:
+    | {
+        field: number | PropertyField;
+        /**
+         * Leave empty for yes/no fields
+         */
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   gallery?: (number | Media)[] | null;
   floorPlans?: (number | Media)[] | null;
   /**
@@ -231,16 +268,87 @@ export interface Property {
    * Optional. Replaces the automatically generated brochure.
    */
   brochure?: (number | null) | Media;
+  /**
+   * Extra downloads shown on the property page, e.g. energy certificate, title plan.
+   */
+  attachments?:
+    | {
+        label: string;
+        file: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Photo links from an MLS feed or import. Used when the gallery is empty.
+   */
+  externalPhotos?:
+    | {
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   address?: {
     line1?: string | null;
     town?: string | null;
     region?: string | null;
     postcode?: string | null;
+    country?: string | null;
   };
+  /**
+   * Filled in from the address when left empty
+   */
   lat?: number | null;
   lng?: number | null;
+  nearby?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  nearbyAt?: string | null;
+  walkScore?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Only visible to logged-in staff. Keys, vendor details, viewing instructions.
+   */
+  privateNotes?: string | null;
+  /**
+   * MLS ListingKey or import ID
+   */
+  listingKey?: string | null;
+  mlsNumber?: string | null;
+  sourceUpdatedAt?: string | null;
+  /**
+   * Listing brokerage, shown for IDX compliance
+   */
+  listOffice?: string | null;
+  listAgentName?: string | null;
+  /**
+   * Created automatically, e.g. REF-1001
+   */
+  reference?: string | null;
   agent?: (number | null) | Agent;
+  labels?: (number | PropertyLabel)[] | null;
   featured?: boolean | null;
+  /**
+   * Makes this a unit inside another listing (sub-property).
+   */
+  parent?: (number | null) | Property;
+  /**
+   * Hidden from the website after this date.
+   */
+  expiresAt?: string | null;
+  source?: ('manual' | 'mls' | 'import') | null;
   /**
    * Shown when "Open houses" is on in Site Settings > Features.
    */
@@ -251,6 +359,59 @@ export interface Property {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Your own property details, e.g. "Sea view", "Parking spaces". Fill them on each property under Details > Custom fields.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "property-fields".
+ */
+export interface PropertyField {
+  id: number;
+  name: string;
+  icon?:
+    | (
+        | 'check'
+        | 'pool'
+        | 'garage'
+        | 'parking'
+        | 'garden'
+        | 'sea'
+        | 'mountain'
+        | 'lift'
+        | 'fireplace'
+        | 'aircon'
+        | 'heating'
+        | 'balcony'
+        | 'terrace'
+        | 'gym'
+        | 'wifi'
+        | 'pets'
+        | 'security'
+        | 'solar'
+        | 'storage'
+        | 'furnished'
+        | 'accessible'
+        | 'star'
+        | 'home'
+        | 'calendar'
+        | 'ruler'
+        | 'bed'
+        | 'bath'
+        | 'view'
+        | 'new'
+      )
+    | null;
+  /**
+   * Optional, e.g. "spaces", "km"
+   */
+  unit?: string | null;
+  /**
+   * Also show on listing cards
+   */
+  showOnCard?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -390,6 +551,65 @@ export interface Agent {
   email: string;
   phone?: string | null;
   bio?: string | null;
+  linkedin?: string | null;
+  instagram?: string | null;
+  /**
+   * Number with country code, e.g. +353871234567
+   */
+  whatsapp?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Badges shown on property cards, for example "New build" or "Price reduced".
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "property-labels".
+ */
+export interface PropertyLabel {
+  id: number;
+  name: string;
+  /**
+   * Badge colour, e.g. #B42318
+   */
+  color?: string | null;
+  icon?:
+    | (
+        | 'check'
+        | 'pool'
+        | 'garage'
+        | 'parking'
+        | 'garden'
+        | 'sea'
+        | 'mountain'
+        | 'lift'
+        | 'fireplace'
+        | 'aircon'
+        | 'heating'
+        | 'balcony'
+        | 'terrace'
+        | 'gym'
+        | 'wifi'
+        | 'pets'
+        | 'security'
+        | 'solar'
+        | 'storage'
+        | 'furnished'
+        | 'accessible'
+        | 'star'
+        | 'home'
+        | 'calendar'
+        | 'ruler'
+        | 'bed'
+        | 'bath'
+        | 'view'
+        | 'new'
+      )
+    | null;
+  /**
+   * Offer as a filter on the listings page
+   */
+  filterable?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -399,10 +619,10 @@ export interface Agent {
  */
 export interface Enquiry {
   id: number;
-  type?: ('property' | 'valuation' | 'contact') | null;
+  type?: ('property' | 'valuation' | 'contact' | 'signup') | null;
   status?: ('new' | 'contacted' | 'closed') | null;
   property?: (number | null) | Property;
-  name: string;
+  name?: string | null;
   email: string;
   phone?: string | null;
   /**
@@ -411,6 +631,7 @@ export interface Enquiry {
   propertyAddress?: string | null;
   message?: string | null;
   website?: string | null;
+  captchaToken?: string | null;
   /**
    * Visitor agreed to the privacy policy
    */
@@ -433,6 +654,7 @@ export interface Viewing {
   phone?: string | null;
   message?: string | null;
   website?: string | null;
+  captchaToken?: string | null;
   /**
    * Visitor agreed to the privacy policy
    */
@@ -466,6 +688,68 @@ export interface SearchAlert {
   lastSentAt?: string | null;
   token?: string | null;
   website?: string | null;
+  captchaToken?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Every lead becomes a deal. Drag them through the stages on the Pipeline board.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deals".
+ */
+export interface Deal {
+  id: number;
+  title: string;
+  stage: 'new' | 'contacted' | 'viewing' | 'offer' | 'agreed' | 'completed' | 'lost';
+  /**
+   * Expected price or rent
+   */
+  value?: number | null;
+  expectedClose?: string | null;
+  contactName: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  property?: (number | null) | Property;
+  agent?: (number | null) | Agent;
+  source?: ('manual' | 'property' | 'viewing' | 'valuation' | 'contact') | null;
+  lead?:
+    | ({
+        relationTo: 'enquiries';
+        value: number | Enquiry;
+      } | null)
+    | ({
+        relationTo: 'viewings';
+        value: number | Viewing;
+      } | null);
+  lostReason?: string | null;
+  notes?: string | null;
+  activities?: {
+    docs?: (number | Activity)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Calls, emails, meetings, notes and tasks against a deal.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activities".
+ */
+export interface Activity {
+  id: number;
+  type: 'note' | 'call' | 'email' | 'meeting' | 'viewing' | 'task';
+  deal: number | Deal;
+  summary: string;
+  details?: string | null;
+  /**
+   * For tasks and meetings
+   */
+  dueAt?: string | null;
+  done?: boolean | null;
+  createdBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -503,55 +787,69 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "page-stats".
+ */
+export interface PageStat {
+  id: number;
+  day: string;
+  path: string;
+  property?: (number | null) | Property;
+  agent?: (number | null) | Agent;
+  views?: number | null;
+  visitors?: number | null;
+  devices?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  referrers?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Your own pages: About, landing pages, area guides, splash pages. Pick a template to start, then add, remove and reorder blocks.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
   id: number;
   title: string;
-  hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    links?:
-      | {
-          link: {
-            type?: ('reference' | 'custom') | null;
-            newTab?: boolean | null;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: number | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: number | Post;
-                } | null);
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-  };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  /**
+   * Fills an empty page with ready-made blocks when you save. Edit everything afterwards.
+   */
+  template?: ('about' | 'sell' | 'development' | 'area' | 'splash') | null;
+  layout?:
+    | (
+        | PbHero
+        | PbText
+        | PbImageText
+        | PbPropertyGrid
+        | PbSearch
+        | PbAgents
+        | PbStats
+        | PbIconGrid
+        | PbTestimonials
+        | PbFaq
+        | PbCta
+        | PbLeadForm
+        | PbGallery
+        | PbVideo
+        | PbPosts
+      )[]
+    | null;
   meta?: {
     title?: string | null;
     /**
@@ -560,6 +858,7 @@ export interface Page {
     image?: (number | null) | Media;
     description?: string | null;
   };
+  chrome?: ('default' | 'transparent' | 'none') | null;
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -572,13 +871,48 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
+ * via the `definition` "PbHero".
  */
-export interface Post {
-  id: number;
-  title: string;
-  heroImage?: (number | null) | Media;
-  content: {
+export interface PbHero {
+  style?: ('image' | 'fullscreen' | 'split' | 'minimal' | 'video') | null;
+  eyebrow?: string | null;
+  heading?: string | null;
+  text?: string | null;
+  image?: (number | null) | Media;
+  /**
+   * Link to an .mp4 file (upload it to Media and paste its URL)
+   */
+  videoUrl?: string | null;
+  /**
+   * Property search bar under the heading
+   */
+  showSearch?: boolean | null;
+  button?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
+  };
+  secondaryButton?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbText".
+ */
+export interface PbText {
+  eyebrow?: string | null;
+  heading?: string | null;
+  body?: {
     root: {
       type: string;
       children: {
@@ -592,7 +926,359 @@ export interface Post {
       version: number;
     };
     [k: string]: unknown;
+  } | null;
+  width?: ('narrow' | 'wide') | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'text';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbImageText".
+ */
+export interface PbImageText {
+  eyebrow?: string | null;
+  heading?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  image?: (number | null) | Media;
+  imageSide?: ('left' | 'right') | null;
+  button?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
   };
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imageText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbPropertyGrid".
+ */
+export interface PbPropertyGrid {
+  eyebrow?: string | null;
+  heading?: string | null;
+  show?: ('featured' | 'sale' | 'rent' | 'town' | 'label' | 'development' | 'manual') | null;
+  town?: string | null;
+  label?: (number | null) | PropertyLabel;
+  development?: (number | null) | Property;
+  properties?: (number | Property)[] | null;
+  limit?: number | null;
+  button?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
+  };
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'propertyGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbSearch".
+ */
+export interface PbSearch {
+  eyebrow?: string | null;
+  heading?: string | null;
+  mode?: ('buy' | 'rent') | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'searchBar';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbAgents".
+ */
+export interface PbAgents {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Blank = all agents
+   */
+  agents?: (number | Agent)[] | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'agentsGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbStats".
+ */
+export interface PbStats {
+  eyebrow?: string | null;
+  heading?: string | null;
+  items?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'stats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbIconGrid".
+ */
+export interface PbIconGrid {
+  eyebrow?: string | null;
+  heading?: string | null;
+  items?:
+    | {
+        icon?:
+          | (
+              | 'check'
+              | 'pool'
+              | 'garage'
+              | 'parking'
+              | 'garden'
+              | 'sea'
+              | 'mountain'
+              | 'lift'
+              | 'fireplace'
+              | 'aircon'
+              | 'heating'
+              | 'balcony'
+              | 'terrace'
+              | 'gym'
+              | 'wifi'
+              | 'pets'
+              | 'security'
+              | 'solar'
+              | 'storage'
+              | 'furnished'
+              | 'accessible'
+              | 'star'
+              | 'home'
+              | 'calendar'
+              | 'ruler'
+              | 'bed'
+              | 'bath'
+              | 'view'
+              | 'new'
+            )
+          | null;
+        title: string;
+        text?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'iconGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbTestimonials".
+ */
+export interface PbTestimonials {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Only real client words, with their permission.
+   */
+  items?:
+    | {
+        quote: string;
+        name: string;
+        /**
+         * e.g. Sold in Ranelagh, 2026
+         */
+        detail?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonials';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbFaq".
+ */
+export interface PbFaq {
+  eyebrow?: string | null;
+  heading?: string | null;
+  items?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbCta".
+ */
+export interface PbCta {
+  eyebrow?: string | null;
+  heading?: string | null;
+  text?: string | null;
+  image?: (number | null) | Media;
+  button?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
+  };
+  secondaryButton?: {
+    label?: string | null;
+    /**
+     * e.g. /valuation
+     */
+    url?: string | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'ctaBanner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbLeadForm".
+ */
+export interface PbLeadForm {
+  eyebrow?: string | null;
+  heading?: string | null;
+  text?: string | null;
+  form?: ('contact' | 'valuation' | 'alert') | null;
+  buttonLabel?: string | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'leadForm';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbGallery".
+ */
+export interface PbGallery {
+  eyebrow?: string | null;
+  heading?: string | null;
+  images: (number | Media)[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbVideo".
+ */
+export interface PbVideo {
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * YouTube, Vimeo, Matterport or Kuula link
+   */
+  url: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'video';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbPosts".
+ */
+export interface PbPosts {
+  eyebrow?: string | null;
+  heading?: string | null;
+  category?: (number | null) | Category;
+  limit?: number | null;
+  background?: ('default' | 'soft' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'latestPosts';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Blog and news articles. Use categories such as "News" or "Market updates" to group them.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * Fills an empty article with a structure when you save.
+   */
+  template?: ('market' | 'news' | 'guide') | null;
+  /**
+   * Short summary for the blog list and search results.
+   */
+  excerpt?: string | null;
+  heroImage?: (number | null) | Media;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
   meta?: {
@@ -622,195 +1308,29 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
+ * via the `definition` "redirects".
  */
-export interface Category {
+export interface Redirect {
   id: number;
-  title: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * You will need to rebuild the website when changing this field.
    */
-  generateSlug?: boolean | null;
-  slug: string;
-  parent?: (number | null) | Category;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Category;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  from: string;
+  to?: {
+    type?: ('reference' | 'custom') | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null);
+    url?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  media: number | Media;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock".
- */
-export interface ArchiveBlock {
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
-  categories?: (number | Category)[] | null;
-  limit?: number | null;
-  selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: number | Post;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'archive';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock".
- */
-export interface FormBlock {
-  form: number | Form;
-  enableIntro?: boolean | null;
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'formBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -974,32 +1494,6 @@ export interface Form {
         id?: string | null;
       }[]
     | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "redirects".
- */
-export interface Redirect {
-  id: number;
-  /**
-   * You will need to rebuild the website when changing this field.
-   */
-  from: string;
-  to?: {
-    type?: ('reference' | 'custom') | null;
-    reference?:
-      | ({
-          relationTo: 'pages';
-          value: number | Page;
-        } | null)
-      | ({
-          relationTo: 'posts';
-          value: number | Post;
-        } | null);
-    url?: string | null;
-  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1172,6 +1666,14 @@ export interface PayloadLockedDocument {
         value: number | Property;
       } | null)
     | ({
+        relationTo: 'property-labels';
+        value: number | PropertyLabel;
+      } | null)
+    | ({
+        relationTo: 'property-fields';
+        value: number | PropertyField;
+      } | null)
+    | ({
         relationTo: 'agents';
         value: number | Agent;
       } | null)
@@ -1188,12 +1690,16 @@ export interface PayloadLockedDocument {
         value: number | SearchAlert;
       } | null)
     | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'deals';
+        value: number | Deal;
       } | null)
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'activities';
+        value: number | Activity;
+      } | null)
+    | ({
+        relationTo: 'page-stats';
+        value: number | PageStat;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1206,6 +1712,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1286,7 +1800,9 @@ export interface PropertiesSelect<T extends boolean = true> {
   bedrooms?: T;
   bathrooms?: T;
   floorArea?: T;
+  yearBuilt?: T;
   energyRating?: T;
+  energyClass?: T;
   summary?: T;
   description?: T;
   features?:
@@ -1295,11 +1811,31 @@ export interface PropertiesSelect<T extends boolean = true> {
         feature?: T;
         id?: T;
       };
+  customFields?:
+    | T
+    | {
+        field?: T;
+        value?: T;
+        id?: T;
+      };
   gallery?: T;
   floorPlans?: T;
   videoUrl?: T;
   tourUrl?: T;
   brochure?: T;
+  attachments?:
+    | T
+    | {
+        label?: T;
+        file?: T;
+        id?: T;
+      };
+  externalPhotos?:
+    | T
+    | {
+        url?: T;
+        id?: T;
+      };
   address?:
     | T
     | {
@@ -1307,11 +1843,26 @@ export interface PropertiesSelect<T extends boolean = true> {
         town?: T;
         region?: T;
         postcode?: T;
+        country?: T;
       };
   lat?: T;
   lng?: T;
+  nearby?: T;
+  nearbyAt?: T;
+  walkScore?: T;
+  privateNotes?: T;
+  listingKey?: T;
+  mlsNumber?: T;
+  sourceUpdatedAt?: T;
+  listOffice?: T;
+  listAgentName?: T;
+  reference?: T;
   agent?: T;
+  labels?: T;
   featured?: T;
+  parent?: T;
+  expiresAt?: T;
+  source?: T;
   openHouses?:
     | T
     | {
@@ -1319,6 +1870,30 @@ export interface PropertiesSelect<T extends boolean = true> {
         end?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "property-labels_select".
+ */
+export interface PropertyLabelsSelect<T extends boolean = true> {
+  name?: T;
+  color?: T;
+  icon?: T;
+  filterable?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "property-fields_select".
+ */
+export interface PropertyFieldsSelect<T extends boolean = true> {
+  name?: T;
+  icon?: T;
+  unit?: T;
+  showOnCard?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1335,6 +1910,9 @@ export interface AgentsSelect<T extends boolean = true> {
   email?: T;
   phone?: T;
   bio?: T;
+  linkedin?: T;
+  instagram?: T;
+  whatsapp?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1352,6 +1930,7 @@ export interface EnquiriesSelect<T extends boolean = true> {
   propertyAddress?: T;
   message?: T;
   website?: T;
+  captchaToken?: T;
   consent?: T;
   consentAt?: T;
   updatedAt?: T;
@@ -1370,6 +1949,7 @@ export interface ViewingsSelect<T extends boolean = true> {
   phone?: T;
   message?: T;
   website?: T;
+  captchaToken?: T;
   consent?: T;
   consentAt?: T;
   updatedAt?: T;
@@ -1388,6 +1968,408 @@ export interface SearchAlertsSelect<T extends boolean = true> {
   lastSentAt?: T;
   token?: T;
   website?: T;
+  captchaToken?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deals_select".
+ */
+export interface DealsSelect<T extends boolean = true> {
+  title?: T;
+  stage?: T;
+  value?: T;
+  expectedClose?: T;
+  contactName?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  property?: T;
+  agent?: T;
+  source?: T;
+  lead?: T;
+  lostReason?: T;
+  notes?: T;
+  activities?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activities_select".
+ */
+export interface ActivitiesSelect<T extends boolean = true> {
+  type?: T;
+  deal?: T;
+  summary?: T;
+  details?: T;
+  dueAt?: T;
+  done?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "page-stats_select".
+ */
+export interface PageStatsSelect<T extends boolean = true> {
+  day?: T;
+  path?: T;
+  property?: T;
+  agent?: T;
+  views?: T;
+  visitors?: T;
+  devices?: T;
+  referrers?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  template?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | PbHeroSelect<T>;
+        text?: T | PbTextSelect<T>;
+        imageText?: T | PbImageTextSelect<T>;
+        propertyGrid?: T | PbPropertyGridSelect<T>;
+        searchBar?: T | PbSearchSelect<T>;
+        agentsGrid?: T | PbAgentsSelect<T>;
+        stats?: T | PbStatsSelect<T>;
+        iconGrid?: T | PbIconGridSelect<T>;
+        testimonials?: T | PbTestimonialsSelect<T>;
+        faq?: T | PbFaqSelect<T>;
+        ctaBanner?: T | PbCtaSelect<T>;
+        leadForm?: T | PbLeadFormSelect<T>;
+        gallery?: T | PbGallerySelect<T>;
+        video?: T | PbVideoSelect<T>;
+        latestPosts?: T | PbPostsSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  chrome?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbHero_select".
+ */
+export interface PbHeroSelect<T extends boolean = true> {
+  style?: T;
+  eyebrow?: T;
+  heading?: T;
+  text?: T;
+  image?: T;
+  videoUrl?: T;
+  showSearch?: T;
+  button?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  secondaryButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbText_select".
+ */
+export interface PbTextSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  width?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbImageText_select".
+ */
+export interface PbImageTextSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  image?: T;
+  imageSide?: T;
+  button?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbPropertyGrid_select".
+ */
+export interface PbPropertyGridSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  show?: T;
+  town?: T;
+  label?: T;
+  development?: T;
+  properties?: T;
+  limit?: T;
+  button?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbSearch_select".
+ */
+export interface PbSearchSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  mode?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbAgents_select".
+ */
+export interface PbAgentsSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  agents?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbStats_select".
+ */
+export interface PbStatsSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbIconGrid_select".
+ */
+export interface PbIconGridSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        icon?: T;
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbTestimonials_select".
+ */
+export interface PbTestimonialsSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        quote?: T;
+        name?: T;
+        detail?: T;
+        id?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbFaq_select".
+ */
+export interface PbFaqSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbCta_select".
+ */
+export interface PbCtaSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  text?: T;
+  image?: T;
+  button?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  secondaryButton?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbLeadForm_select".
+ */
+export interface PbLeadFormSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  text?: T;
+  form?: T;
+  buttonLabel?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbGallery_select".
+ */
+export interface PbGallerySelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  images?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbVideo_select".
+ */
+export interface PbVideoSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  url?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PbPosts_select".
+ */
+export interface PbPostsSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  category?: T;
+  limit?: T;
+  background?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  template?: T;
+  excerpt?: T;
+  heroImage?: T;
+  content?: T;
+  relatedPosts?: T;
+  categories?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  authors?: T;
+  populatedAuthors?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1510,192 +2492,6 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pages_select".
- */
-export interface PagesSelect<T extends boolean = true> {
-  title?: T;
-  hero?:
-    | T
-    | {
-        type?: T;
-        richText?: T;
-        links?:
-          | T
-          | {
-              link?:
-                | T
-                | {
-                    type?: T;
-                    newTab?: T;
-                    reference?: T;
-                    url?: T;
-                    label?: T;
-                    appearance?: T;
-                  };
-              id?: T;
-            };
-        media?: T;
-      };
-  layout?:
-    | T
-    | {
-        cta?: T | CallToActionBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
-      };
-  meta?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        description?: T;
-      };
-  publishedAt?: T;
-  generateSlug?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock_select".
- */
-export interface CallToActionBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock_select".
- */
-export interface ContentBlockSelect<T extends boolean = true> {
-  columns?:
-    | T
-    | {
-        size?: T;
-        richText?: T;
-        enableLink?: T;
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock_select".
- */
-export interface MediaBlockSelect<T extends boolean = true> {
-  media?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock_select".
- */
-export interface ArchiveBlockSelect<T extends boolean = true> {
-  introContent?: T;
-  populateBy?: T;
-  relationTo?: T;
-  categories?: T;
-  limit?: T;
-  selectedDocs?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock_select".
- */
-export interface FormBlockSelect<T extends boolean = true> {
-  form?: T;
-  enableIntro?: T;
-  introContent?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts_select".
- */
-export interface PostsSelect<T extends boolean = true> {
-  title?: T;
-  heroImage?: T;
-  content?: T;
-  relatedPosts?: T;
-  categories?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        description?: T;
-      };
-  publishedAt?: T;
-  authors?: T;
-  populatedAuthors?:
-    | T
-    | {
-        id?: T;
-        name?: T;
-      };
-  generateSlug?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories_select".
- */
-export interface CategoriesSelect<T extends boolean = true> {
-  title?: T;
-  generateSlug?: T;
-  slug?: T;
-  parent?: T;
-  breadcrumbs?:
-    | T
-    | {
-        doc?: T;
-        url?: T;
-        label?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1996,6 +2792,61 @@ export interface SiteSetting {
    * Optional hex colour, e.g. #8A6A3F. Blank = the theme default.
    */
   accentColor?: string | null;
+  menu?:
+    | {
+        label: string;
+        /**
+         * e.g. /properties?mode=buy or https://…
+         */
+        url?: string | null;
+        /**
+         * Or link to one of your pages
+         */
+        page?: (number | null) | Page;
+        /**
+         * One column = dropdown. Two or more = mega menu.
+         */
+        columns?:
+          | {
+              heading?: string | null;
+              links?:
+                | {
+                    label: string;
+                    url?: string | null;
+                    page?: (number | null) | Page;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * Optional picture for a mega menu column
+               */
+              image?: (number | null) | Media;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Blank = the design's own button
+   */
+  ctaLabel?: string | null;
+  /**
+   * Blank = /valuation
+   */
+  ctaUrl?: string | null;
+  /**
+   * Header stays at the top while scrolling.
+   */
+  headerSticky?: boolean | null;
+  /**
+   * Header sits over the hero image until you scroll.
+   */
+  headerTransparent?: boolean | null;
+  /**
+   * Optional. Blank = the theme homepage below. Pick a page built in Pages to use the page builder instead.
+   */
+  homePage?: (number | null) | Page;
   heroHeadline?: string | null;
   heroText?: string | null;
   heroImage?: (number | null) | Media;
@@ -2015,11 +2866,164 @@ export interface SiteSetting {
    */
   currencyCode?: string | null;
   areaUnit?: ('sqm' | 'sqft') | null;
+  /**
+   * New listings get REF-1001, REF-1002…
+   */
+  refPrefix?: string | null;
+  /**
+   * Visitors can still switch.
+   */
+  defaultView?: ('map' | 'grid' | 'list') | null;
+  favourites?: boolean | null;
+  compare?: boolean | null;
+  quickView?: boolean | null;
   brochureEnabled?: boolean | null;
   /**
    * Small print at the bottom of each brochure page.
    */
   brochureFooter?: string | null;
+  viewingSlots?: {
+    /**
+     * Off = a free date and time box.
+     */
+    enabled?: boolean | null;
+    days?: ('0' | '1' | '2' | '3' | '4' | '5' | '6')[] | null;
+    /**
+     * First slot
+     */
+    start?: string | null;
+    /**
+     * Last slot ends
+     */
+    end?: string | null;
+    /**
+     * Minutes per viewing
+     */
+    slotMinutes?: number | null;
+    /**
+     * Minimum notice (hours)
+     */
+    noticeHours?: number | null;
+    /**
+     * Days bookable ahead
+     */
+    daysAhead?: number | null;
+    /**
+     * IANA time zone of your office, e.g. Europe/Dublin, America/New_York, Asia/Dubai
+     */
+    timezone?: string | null;
+  };
+  /**
+   * Languages live on the website. The main language is set by DEFAULT_LANGUAGE on the server (English if not set). Others get a /fr, /es… address.
+   */
+  languages?: ('en' | 'fr' | 'es' | 'de' | 'it' | 'pt' | 'nl' | 'ar')[] | null;
+  /**
+   * Show a language switcher in the header when more than one language is live.
+   */
+  languageSwitcher?: boolean | null;
+  /**
+   * Lets visitors see prices in another currency. Rates update daily from the European Central Bank.
+   */
+  currencySwitcher?: boolean | null;
+  /**
+   * Currencies offered in the switcher. Your listing currency is always included.
+   */
+  currencies?:
+    | (
+        | 'EUR'
+        | 'GBP'
+        | 'USD'
+        | 'CAD'
+        | 'AUD'
+        | 'CHF'
+        | 'SEK'
+        | 'NOK'
+        | 'DKK'
+        | 'PLN'
+        | 'CZK'
+        | 'HUF'
+        | 'JPY'
+        | 'CNY'
+        | 'HKD'
+        | 'SGD'
+        | 'INR'
+        | 'ZAR'
+        | 'AED'
+        | 'SAR'
+        | 'BRL'
+        | 'MXN'
+        | 'NZD'
+        | 'TRY'
+      )[]
+    | null;
+  /**
+   * Overrides the daily rate. 1 unit of your listing currency = rate.
+   */
+  currencyRates?:
+    | {
+        code: string;
+        rate: number;
+        id?: string | null;
+      }[]
+    | null;
+  ratesCache?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  mls?: {
+    enabled?: boolean | null;
+    provider?: ('bridge' | 'trestle' | 'spark' | 'mlsgrid' | 'reso') | null;
+    /**
+     * Shown in the listing disclaimer
+     */
+    mlsName?: string | null;
+    /**
+     * The OData base, e.g. https://api.bridgedataoutput.com/api/v2/OData/yourmls
+     */
+    apiUrl?: string | null;
+    auth?: ('token' | 'oauth') | null;
+    accessToken?: string | null;
+    /**
+     * e.g. https://api-trestle.corelogic.com/trestle/oidc/connect/token
+     */
+    tokenUrl?: string | null;
+    clientId?: string | null;
+    clientSecret?: string | null;
+    scope?: string | null;
+    /**
+     * Optional OData filter, e.g. City eq 'Austin' or ListOfficeMlsId eq 'ABC123'. Active and pending listings are always included.
+     */
+    filter?: string | null;
+    syncHours?: number | null;
+    maxListings?: number | null;
+    includeSold?: boolean | null;
+    /**
+     * Agent for imported listings
+     */
+    defaultAgent?: (number | null) | Agent;
+    /**
+     * IDX disclaimer required by your MLS, shown under MLS listings.
+     */
+    disclaimer?: string | null;
+    /**
+     * MLS or IDX logo, if your MLS requires one.
+     */
+    logo?: (number | null) | Media;
+    lastSync?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
   smtpHost?: string | null;
   smtpPort?: number | null;
   smtpUser?: string | null;
@@ -2126,6 +3130,22 @@ export interface SiteSetting {
      */
     analyticsSrc?: string | null;
     /**
+     * Shows schools, shops, transport and parks near each property (OpenStreetMap, free).
+     */
+    nearbyPlaces?: boolean | null;
+    /**
+     * Shows Walk Score, Transit Score and Bike Score. Needs a free API key from walkscore.com.
+     */
+    walkScore?: boolean | null;
+    walkScoreKey?: string | null;
+    /**
+     * Adds Cloudflare Turnstile or Google reCAPTCHA v3 to every form, on top of the built-in spam protection.
+     */
+    captcha?: boolean | null;
+    captchaProvider?: ('turnstile' | 'recaptcha') | null;
+    captchaSiteKey?: string | null;
+    captchaSecret?: string | null;
+    /**
      * Emails the admin when the server hits an error (max one email per 15 minutes).
      */
     errorAlerts?: boolean | null;
@@ -2208,6 +3228,34 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   logo?: T;
   favicon?: T;
   accentColor?: T;
+  menu?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        page?: T;
+        columns?:
+          | T
+          | {
+              heading?: T;
+              links?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    page?: T;
+                    id?: T;
+                  };
+              image?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaUrl?: T;
+  headerSticky?: T;
+  headerTransparent?: T;
+  homePage?: T;
   heroHeadline?: T;
   heroText?: T;
   heroImage?: T;
@@ -2218,8 +3266,59 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   currencySymbol?: T;
   currencyCode?: T;
   areaUnit?: T;
+  refPrefix?: T;
+  defaultView?: T;
+  favourites?: T;
+  compare?: T;
+  quickView?: T;
   brochureEnabled?: T;
   brochureFooter?: T;
+  viewingSlots?:
+    | T
+    | {
+        enabled?: T;
+        days?: T;
+        start?: T;
+        end?: T;
+        slotMinutes?: T;
+        noticeHours?: T;
+        daysAhead?: T;
+        timezone?: T;
+      };
+  languages?: T;
+  languageSwitcher?: T;
+  currencySwitcher?: T;
+  currencies?: T;
+  currencyRates?:
+    | T
+    | {
+        code?: T;
+        rate?: T;
+        id?: T;
+      };
+  ratesCache?: T;
+  mls?:
+    | T
+    | {
+        enabled?: T;
+        provider?: T;
+        mlsName?: T;
+        apiUrl?: T;
+        auth?: T;
+        accessToken?: T;
+        tokenUrl?: T;
+        clientId?: T;
+        clientSecret?: T;
+        scope?: T;
+        filter?: T;
+        syncHours?: T;
+        maxListings?: T;
+        includeSold?: T;
+        defaultAgent?: T;
+        disclaimer?: T;
+        logo?: T;
+        lastSync?: T;
+      };
   smtpHost?: T;
   smtpPort?: T;
   smtpUser?: T;
@@ -2253,6 +3352,13 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         analyticsProvider?: T;
         analyticsId?: T;
         analyticsSrc?: T;
+        nearbyPlaces?: T;
+        walkScore?: T;
+        walkScoreKey?: T;
+        captcha?: T;
+        captchaProvider?: T;
+        captchaSiteKey?: T;
+        captchaSecret?: T;
         errorAlerts?: T;
         errorAlertEmail?: T;
         leadRetention?: T;
@@ -2378,6 +3484,16 @@ export interface CodeBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'code';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

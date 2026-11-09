@@ -1,31 +1,12 @@
-type PreviewSearchParams = { path: string; previewSecret: string; collection?: string; slug?: string }
 import { PayloadRequest, CollectionSlug } from 'payload'
 
-const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
-  posts: '/posts',
-  pages: '',
-}
+const prefix: Partial<Record<CollectionSlug, string>> = { posts: '/blog', pages: '' }
 
-type Props = {
-  collection: keyof typeof collectionPrefixMap
-  slug: string
-  req: PayloadRequest
-}
+type Props = { collection: 'posts' | 'pages'; slug: string; req: PayloadRequest }
 
+/** Admin "Preview" opens the draft through /next/preview, which turns on draft mode. */
 export const generatePreviewPath = ({ collection, slug }: Props) => {
-  if (slug === undefined || slug === null) {
-    return null
-  }
-
-  // Encode to support slugs with special characters
-  const encodedSlug = encodeURIComponent(slug)
-
-  const encodedParams = new URLSearchParams({
-    path: `${collectionPrefixMap[collection]}/${encodedSlug}`,
-    previewSecret: process.env.PREVIEW_SECRET || '',
-  } satisfies PreviewSearchParams)
-
-  const url = `/next/preview?${encodedParams.toString()}`
-
-  return url
+  if (slug === undefined || slug === null) return null
+  const params = new URLSearchParams({ path: `${prefix[collection]}/${encodeURIComponent(slug)}`, previewSecret: process.env.PREVIEW_SECRET || process.env.PAYLOAD_SECRET?.slice(0, 16) || '' })
+  return `/next/preview?${params.toString()}`
 }

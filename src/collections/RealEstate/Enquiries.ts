@@ -2,14 +2,14 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { adminOnly, adminOrOwnAgent } from '../../access/roles'
 import { consentFields, handleNewLead, requireConsent } from '../../hooks/leads'
-import { honeypotField, rateLimitPublic } from '../../hooks/antiSpam'
+import { captchaField, honeypotField, rateLimitPublic, verifyCaptcha } from '../../hooks/antiSpam'
 
 export const Enquiries: CollectionConfig = {
   slug: 'enquiries',
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'type', 'property', 'status', 'createdAt'], group: 'Leads' },
   access: { create: anyone, read: adminOrOwnAgent('property.agent'), update: adminOrOwnAgent('property.agent'), delete: adminOnly },
   defaultSort: '-createdAt',
-  hooks: { beforeValidate: [rateLimitPublic, requireConsent], afterChange: [handleNewLead('enquiry')] },
+  hooks: { beforeValidate: [rateLimitPublic, verifyCaptcha, requireConsent], afterChange: [handleNewLead('enquiry')] },
   fields: [
     {
       type: 'row',
@@ -22,6 +22,7 @@ export const Enquiries: CollectionConfig = {
             { label: 'Property enquiry', value: 'property' },
             { label: 'Valuation request', value: 'valuation' },
             { label: 'General contact', value: 'contact' },
+            { label: 'Email signup', value: 'signup' },
           ],
         },
         {
@@ -34,7 +35,7 @@ export const Enquiries: CollectionConfig = {
       ],
     },
     { name: 'property', type: 'relationship', relationTo: 'properties' },
-    { name: 'name', type: 'text', required: true },
+    { name: 'name', type: 'text', validate: (v: unknown, { siblingData }: { siblingData: { type?: string } }) => Boolean(v) || siblingData?.type === 'signup' || 'Please enter your name.' },
     {
       type: 'row',
       fields: [
@@ -45,6 +46,7 @@ export const Enquiries: CollectionConfig = {
     { name: 'propertyAddress', type: 'text', admin: { description: 'For valuation requests' } },
     { name: 'message', type: 'textarea' },
     honeypotField,
+    captchaField,
     ...consentFields,
   ],
 }

@@ -16,7 +16,7 @@ import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
-import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
+import { POST_TEMPLATES } from '../../blocks/site/templates'
 
 import {
   MetaDescriptionField,
@@ -48,7 +48,9 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
-    defaultColumns: ['title', 'slug', 'updatedAt'],
+    group: 'Website',
+    description: 'Blog and news articles. Use categories such as "News" or "Market updates" to group them.',
+    defaultColumns: ['title', 'categories', '_status', 'publishedAt'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -70,7 +72,26 @@ export const Posts: CollectionConfig<'posts'> = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
+    {
+      name: 'template',
+      label: 'Start from a template',
+      type: 'select',
+      options: Object.entries(POST_TEMPLATES).map(([value, t]) => ({ value, label: t.label })),
+      admin: { description: 'Fills an empty article with a structure when you save.', condition: (d) => !d?.content?.root?.children?.length || d?.content?.root?.children?.length < 2 },
+      hooks: {
+        beforeChange: [
+          ({ value, siblingData }) => {
+            const t = value && POST_TEMPLATES[value as string]
+            const empty = !siblingData.content?.root?.children?.length || (siblingData.content.root.children.length === 1 && !siblingData.content.root.children[0]?.children?.length)
+            if (t && empty) siblingData.content = t.content()
+            return value
+          },
+        ],
+      },
+    },
+    { name: 'excerpt', type: 'textarea', maxLength: 300, localized: true, admin: { description: 'Short summary for the blog list and search results.' } },
     {
       type: 'tabs',
       tabs: [
@@ -97,7 +118,7 @@ export const Posts: CollectionConfig<'posts'> = {
                 },
               }),
               label: false,
-              required: true,
+              localized: true,
             },
           ],
           label: 'Content',
@@ -135,6 +156,7 @@ export const Posts: CollectionConfig<'posts'> = {
         {
           name: 'meta',
           label: 'SEO',
+          localized: true,
           fields: [
             OverviewField({
               titlePath: 'meta.title',
@@ -217,14 +239,12 @@ export const Posts: CollectionConfig<'posts'> = {
     slugField(),
   ],
   hooks: {
-    afterChange: [revalidatePost],
     afterRead: [populateAuthors],
-    afterDelete: [revalidateDelete],
   },
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        interval: 400,
       },
       schedulePublish: true,
     },
