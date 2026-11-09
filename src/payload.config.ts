@@ -52,7 +52,7 @@ export default buildConfig({
       providers: ['@/components/admin/Skin#SkinProvider'],
       graphics: { Logo: '@/components/admin/Brand#AdminLogo', Icon: '@/components/admin/Brand#AdminIcon' },
       views: {
-        pipeline: { Component: '@/components/admin/Pipeline#PipelineView', path: '/pipeline' },
+        pipeline: { Component: '@/components/admin/Pipeline#PipelineView', path: '/pipeline', meta: { title: 'Pipeline' } },
         analytics: { Component: '@/components/admin/Analytics#AnalyticsView', path: '/analytics' },
         importListings: { Component: '@/components/admin/Import#ImportView', path: '/import' },
       },
