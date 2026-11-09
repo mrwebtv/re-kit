@@ -34,6 +34,7 @@ import { AdminLogo as AdminLogo_066c562e10ad4e70ff0de1a39f9b91f6 } from '@/compo
 import { NavLinks as NavLinks_efcc7fec2af44371f7fed5d0104659dd } from '@/components/admin/NavLinks'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { DashboardLink as DashboardLink_64b80235b70372ae407044329831077f } from '@/components/admin/DashboardLink'
 import { SkinProvider as SkinProvider_1efadef465488572d73f4619957bac4b } from '@/components/admin/Skin'
 import { PipelineView as PipelineView_eaafbf7c85d4b82fd841fb306dcac6b3 } from '@/components/admin/Pipeline'
 import { AnalyticsView as AnalyticsView_8125a12f0fb1a035238912b1ee8c5989 } from '@/components/admin/Analytics'
@@ -78,6 +79,7 @@ export const importMap = {
   "@/components/admin/NavLinks#NavLinks": NavLinks_efcc7fec2af44371f7fed5d0104659dd,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/components/admin/DashboardLink#DashboardLink": DashboardLink_64b80235b70372ae407044329831077f,
   "@/components/admin/Skin#SkinProvider": SkinProvider_1efadef465488572d73f4619957bac4b,
   "@/components/admin/Pipeline#PipelineView": PipelineView_eaafbf7c85d4b82fd841fb306dcac6b3,
   "@/components/admin/Analytics#AnalyticsView": AnalyticsView_8125a12f0fb1a035238912b1ee8c5989,

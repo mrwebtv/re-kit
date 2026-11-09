@@ -134,7 +134,7 @@ export default async function BeforeDashboard({ payload, user }: { payload: Payl
           <div className="rk-dash__panel">
             <div className="rk-dash__panel-head"><h2>Setup</h2></div>
             <ol className="rk-dash__setup">
-              <li><DemoButton /> <span>8 sample homes, a development, pages, articles and photos. Remove them any time.</span></li>
+              <li><DemoButton /> <span>Sample homes, a development with units, agents with photos, pages and articles. Remove them any time.</span></li>
               <li><a href="/admin/globals/site-settings">Site Settings</a> <span>Pick one of 4 designs, add your logo, contact details and email, and switch on extras.</span></li>
               <li><a href="/admin/collections/agents">Agents</a> and <a href="/admin/collections/properties">properties</a> <span>Leads go straight to the listing&apos;s agent.</span></li>
               <li><a href="/admin/collections/pages">Pages</a> and <a href="/admin/collections/posts">blog</a> <span>Start from a ready-made template.</span></li>
