@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.hostinger.com/mrwebvps?compose_url=https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml"><img src="https://assets.hostinger.com/vps/deploy.svg" alt="Deploy on Hostinger" height="44"></a>
+  <a href="https://www.hostinger.com/mrwebvps"><img src="https://assets.hostinger.com/vps/deploy.svg" alt="Deploy on Hostinger" height="44"></a>
 </p>
 
 <p align="center">
