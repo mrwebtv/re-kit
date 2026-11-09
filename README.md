@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.hostinger.com/docker-hosting?compose_url=https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml"><img src="https://assets.hostinger.com/vps/deploy.svg" alt="Deploy on Hostinger" height="44"></a>
+  <a href="https://www.hostinger.com/mrwebvps?compose_url=https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml"><img src="https://assets.hostinger.com/vps/deploy.svg" alt="Deploy on Hostinger" height="44"></a>
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@ Luxury editorial, Modern bright, Dark premium and Swiss bold. Change it in **Sit
 
 ## Deploy in one click
 
-1. Click **Deploy on Hostinger** above, or get a VPS through **[mrweb.tv/hosting](https://mrweb.tv/hosting)** (KVM 2 is plenty) and choose **Ubuntu 24.04 with Docker**.
+1. Click **Deploy on Hostinger** above, or get a VPS through **[my link](https://www.hostinger.com/mrwebvps)** (KVM 2 is plenty) and choose **Ubuntu 24.04 with Docker**.
 2. In hPanel open **Docker Manager > Compose from URL** and paste:
    `https://raw.githubusercontent.com/mrwebtv/re-kit/main/docker-compose.yml`
 3. Optionally set `DOMAIN` (pointed at the VPS IP for automatic HTTPS), `POSTGRES_PASSWORD`, and the SMTP variables for lead emails. Then deploy.
