@@ -36,6 +36,19 @@ export const Users: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text' },
     {
+      name: 'adminSkin',
+      label: 'Admin design',
+      type: 'select',
+      defaultValue: 'studio',
+      options: [
+        { label: 'Studio (light, modern)', value: 'studio' },
+        { label: 'Midnight (dark)', value: 'midnight' },
+        { label: 'Estate (warm, classic)', value: 'estate' },
+        { label: 'Essential (plain)', value: 'essential' },
+      ],
+      admin: { position: 'sidebar', description: 'How this admin looks for you. Also switchable at the bottom of the menu.' },
+    },
+    {
       name: 'role',
       type: 'select',
       defaultValue: 'agent',

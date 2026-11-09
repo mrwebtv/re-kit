@@ -29,9 +29,12 @@ import { MlsPanel as MlsPanel_bd51e00f48afa690b57188610fdde46e } from '@/compone
 import { TestEmailButton as TestEmailButton_99635bc14de407531576022cd79284db } from '@/components/admin/TestEmailButton'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
+import { AdminIcon as AdminIcon_066c562e10ad4e70ff0de1a39f9b91f6 } from '@/components/admin/Brand'
+import { AdminLogo as AdminLogo_066c562e10ad4e70ff0de1a39f9b91f6 } from '@/components/admin/Brand'
 import { NavLinks as NavLinks_efcc7fec2af44371f7fed5d0104659dd } from '@/components/admin/NavLinks'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { SkinProvider as SkinProvider_1efadef465488572d73f4619957bac4b } from '@/components/admin/Skin'
 import { PipelineView as PipelineView_eaafbf7c85d4b82fd841fb306dcac6b3 } from '@/components/admin/Pipeline'
 import { AnalyticsView as AnalyticsView_8125a12f0fb1a035238912b1ee8c5989 } from '@/components/admin/Analytics'
 import { ImportView as ImportView_4e03607d2b67c2059dc16376ef70bb20 } from '@/components/admin/Import'
@@ -70,9 +73,12 @@ export const importMap = {
   "@/components/admin/TestEmailButton#TestEmailButton": TestEmailButton_99635bc14de407531576022cd79284db,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
+  "@/components/admin/Brand#AdminIcon": AdminIcon_066c562e10ad4e70ff0de1a39f9b91f6,
+  "@/components/admin/Brand#AdminLogo": AdminLogo_066c562e10ad4e70ff0de1a39f9b91f6,
   "@/components/admin/NavLinks#NavLinks": NavLinks_efcc7fec2af44371f7fed5d0104659dd,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/components/admin/Skin#SkinProvider": SkinProvider_1efadef465488572d73f4619957bac4b,
   "@/components/admin/Pipeline#PipelineView": PipelineView_eaafbf7c85d4b82fd841fb306dcac6b3,
   "@/components/admin/Analytics#AnalyticsView": AnalyticsView_8125a12f0fb1a035238912b1ee8c5989,
   "@/components/admin/Import#ImportView": ImportView_4e03607d2b67c2059dc16376ef70bb20,

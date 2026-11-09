@@ -1,14 +1,9 @@
 import React from 'react'
 
-const BeforeLogin: React.FC = () => {
-  return (
-    <div>
-      <p>
-        <b>Welcome to your dashboard!</b>
-        {' This is where site admins will log in to manage your website.'}
-      </p>
-    </div>
-  )
-}
+const BeforeLogin: React.FC = () => (
+  <div className="rk-login-note">
+    <p>Sign in to manage listings, leads and your website.</p>
+  </div>
+)
 
 export default BeforeLogin

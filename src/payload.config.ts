@@ -48,6 +48,8 @@ export default buildConfig({
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
       afterNavLinks: ['@/components/admin/NavLinks#NavLinks'],
+      providers: ['@/components/admin/Skin#SkinProvider'],
+      graphics: { Logo: '@/components/admin/Brand#AdminLogo', Icon: '@/components/admin/Brand#AdminIcon' },
       views: {
         pipeline: { Component: '@/components/admin/Pipeline#PipelineView', path: '/pipeline' },
         analytics: { Component: '@/components/admin/Analytics#AnalyticsView', path: '/analytics' },
@@ -58,6 +60,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     user: Users.slug,
+    meta: { titleSuffix: ' · Admin', icons: [{ rel: 'icon', url: '/house.svg' }] },
     livePreview: {
       breakpoints: [
         {

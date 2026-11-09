@@ -760,6 +760,10 @@ export interface Activity {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * How this admin looks for you. Also switchable at the bottom of the menu.
+   */
+  adminSkin?: ('studio' | 'midnight' | 'estate' | 'essential') | null;
   role: 'admin' | 'agent';
   /**
    * For agent accounts: the agent profile this login manages.
@@ -2473,6 +2477,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  adminSkin?: T;
   role?: T;
   agent?: T;
   updatedAt?: T;
