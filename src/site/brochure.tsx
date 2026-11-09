@@ -38,7 +38,7 @@ function paragraphs(rt: unknown): string[] {
 export async function renderBrochure(p: Property, s: SiteSetting | Site, listingUrl: string) {
   const t = (k: string) => ('$' in s && s.$ ? s.$.t(k) : k)
   const theme = getTheme(s.theme)
-  const accent = s.accentColor || theme.defaultAccent
+  const accent = s.colors?.primary || s.accentColor || theme.defaultAccent
   const serif = theme.id === 'editorial' || theme.id === 'dark'
   const display = serif ? 'Times-Roman' : 'Helvetica-Bold'
   const ink = '#1b1b19'

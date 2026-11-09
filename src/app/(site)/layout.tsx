@@ -1,3 +1,4 @@
+import { brandVars } from '@/lib/color'
 import type { Metadata } from 'next'
 import type { CSSProperties, ReactNode } from 'react'
 import { notFound } from 'next/navigation'
@@ -50,7 +51,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   const s = await getSite()
   if (!s.$.languages.includes(s.$.locale)) notFound()
   const theme = getTheme(s.theme)
-  const style = { '--accent': s.accentColor || theme.defaultAccent } as CSSProperties
+  const style = brandVars(s.colors?.primary || s.accentColor, theme.defaultAccent, s.colors) as CSSProperties
   const f = s.features
   const analytics = f?.analytics && f.analyticsId ? f.analyticsProvider || 'plausible' : null
   const chrome = await chromeFor(s.$.path, s.homePage)

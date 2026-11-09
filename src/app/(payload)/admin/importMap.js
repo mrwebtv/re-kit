@@ -24,6 +24,7 @@ import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@pa
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
+import { ColorField as ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0 } from '@/components/admin/ColorField'
 import { LabelRow as LabelRow_7f4fa5fc68fb5a0a92393f6444a57fbd } from '@/components/admin/RowLabel'
 import { MlsPanel as MlsPanel_bd51e00f48afa690b57188610fdde46e } from '@/components/admin/MlsPanel'
 import { TestEmailButton as TestEmailButton_99635bc14de407531576022cd79284db } from '@/components/admin/TestEmailButton'
@@ -69,6 +70,7 @@ export const importMap = {
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
+  "@/components/admin/ColorField#ColorField": ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0,
   "@/components/admin/RowLabel#LabelRow": LabelRow_7f4fa5fc68fb5a0a92393f6444a57fbd,
   "@/components/admin/MlsPanel#MlsPanel": MlsPanel_bd51e00f48afa690b57188610fdde46e,
   "@/components/admin/TestEmailButton#TestEmailButton": TestEmailButton_99635bc14de407531576022cd79284db,

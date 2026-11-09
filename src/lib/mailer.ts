@@ -27,7 +27,7 @@ export const esc = (v: unknown) =>
 
 /** Simple branded HTML email body. */
 export function layout(s: SiteSetting, inner: string) {
-  const accent = s.accentColor || '#1b1b19'
+  const accent = s.colors?.primary || s.accentColor || '#1b1b19'
   return `<!doctype html><html><body style="margin:0;background:#f4f4f2;font-family:Arial,Helvetica,sans-serif;color:#1b1b19">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" style="max-width:560px;background:#fff" cellpadding="0" cellspacing="0">

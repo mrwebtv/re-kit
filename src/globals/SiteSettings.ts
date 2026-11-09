@@ -23,6 +23,16 @@ const toggle = (name: string, label: string, description: string): Field => ({
 
 const when = (flag: string) => ({ condition: (data: Record<string, unknown>) => Boolean((data?.features as Record<string, unknown>)?.[flag]) })
 
+const HEX = /^#[0-9a-fA-F]{6}$/
+/** A hex colour with the Elementor-style picker. */
+const colour = (name: string, label: string, description: string): Field => ({
+  name,
+  label,
+  type: 'text',
+  admin: { description, components: { Field: '@/components/admin/ColorField#ColorField' } },
+  validate: (v: string | null | undefined) => !v || HEX.test(v) || 'Use a hex colour like #8A6A3F',
+})
+
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: 'Site Settings',
@@ -63,11 +73,44 @@ export const SiteSettings: GlobalConfig = {
                 { name: 'favicon', type: 'upload', relationTo: 'media', admin: { width: '50%', description: 'Square image, 512×512 PNG ideal.' } },
               ],
             },
+            { name: 'accentColor', type: 'text', admin: { hidden: true } },
             {
-              name: 'accentColor',
-              type: 'text',
-              admin: { description: 'Optional hex colour, e.g. #8A6A3F. Blank = the theme default.' },
-              validate: (v: string | null | undefined) => !v || /^#[0-9a-fA-F]{6}$/.test(v) || 'Use a hex colour like #8A6A3F',
+              type: 'collapsible',
+              label: 'Brand colours',
+              admin: { initCollapsed: false, description: 'Your own colours on top of the chosen design. Leave any colour blank to keep the design default. Text on top of a colour is picked automatically for contrast unless you set it.' },
+              fields: [
+                {
+                  type: 'group',
+                  name: 'colors',
+                  label: false,
+                  admin: { hideGutter: true },
+                  fields: [
+                    {
+                      type: 'row',
+                      fields: [colour('primary', 'Primary', 'Buttons, links, prices and highlights.'), colour('onPrimary', 'Text on primary', 'Text on primary buttons. Blank = automatic.')],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        colour('secondary', 'Secondary', 'Dark bands, footer and inverted sections.'),
+                        colour('onSecondary', 'Text on secondary', 'Blank = automatic.'),
+                      ],
+                    },
+                    {
+                      type: 'row',
+                      fields: [colour('text', 'Text', 'Headings and body text.'), colour('muted', 'Muted text', 'Captions, labels and secondary text.')],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        colour('background', 'Background', 'Page background.'),
+                        colour('surface', 'Cards and panels', 'Cards, forms and side panels.'),
+                        colour('border', 'Borders', 'Lines and dividers.'),
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

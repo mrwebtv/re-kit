@@ -2793,10 +2793,45 @@ export interface SiteSetting {
    * Square image, 512×512 PNG ideal.
    */
   favicon?: (number | null) | Media;
-  /**
-   * Optional hex colour, e.g. #8A6A3F. Blank = the theme default.
-   */
   accentColor?: string | null;
+  colors?: {
+    /**
+     * Buttons, links, prices and highlights.
+     */
+    primary?: string | null;
+    /**
+     * Text on primary buttons. Blank = automatic.
+     */
+    onPrimary?: string | null;
+    /**
+     * Dark bands, footer and inverted sections.
+     */
+    secondary?: string | null;
+    /**
+     * Blank = automatic.
+     */
+    onSecondary?: string | null;
+    /**
+     * Headings and body text.
+     */
+    text?: string | null;
+    /**
+     * Captions, labels and secondary text.
+     */
+    muted?: string | null;
+    /**
+     * Page background.
+     */
+    background?: string | null;
+    /**
+     * Cards, forms and side panels.
+     */
+    surface?: string | null;
+    /**
+     * Lines and dividers.
+     */
+    border?: string | null;
+  };
   menu?:
     | {
         label: string;
@@ -3233,6 +3268,19 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   logo?: T;
   favicon?: T;
   accentColor?: T;
+  colors?:
+    | T
+    | {
+        primary?: T;
+        onPrimary?: T;
+        secondary?: T;
+        onSecondary?: T;
+        text?: T;
+        muted?: T;
+        background?: T;
+        surface?: T;
+        border?: T;
+      };
   menu?:
     | T
     | {
