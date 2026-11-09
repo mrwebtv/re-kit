@@ -188,8 +188,9 @@
   .rk-search, .rk-split > :last-child, .rk-detail-side { padding: 24px; }
   .rk-map { height: 420px; }
 }
-.rk-skip { position: absolute; left: -9999px; top: 8px; z-index: 100; background: var(--inverse); color: var(--on-inverse); padding: 10px 16px; }
-.rk-skip:focus { left: 8px; }
+.rk-skip { position: absolute; inset-inline-start: 8px; top: -200px; z-index: 100; background: var(--inverse); color: var(--on-inverse); padding: 10px 16px; }
+.rk-skip:focus { top: 8px; }
+.rk-hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .rk-card-media { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--surface-2); }
 .rk-card-media > .rk-photo { position: absolute; inset: 0; border-radius: 0; aspect-ratio: auto; height: 100%; }
 .rk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

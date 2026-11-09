@@ -14,6 +14,7 @@ services:
       DATABASE_URL: postgresql://payload:${POSTGRES_PASSWORD:-payload-change-me}@postgres:5432/realestate
       DOMAIN: ${DOMAIN:-}
       SITE_URL: ${SITE_URL:-}
+      DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-465}
       SMTP_USER: ${SMTP_USER:-}

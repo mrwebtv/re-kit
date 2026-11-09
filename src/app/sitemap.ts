@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const langs = ((s.languages?.length ? s.languages : [DEFAULT_LOCALE]) as string[]).filter((l) => l !== DEFAULT_LOCALE)
   const alt = (path: string) => (langs.length ? { languages: Object.fromEntries([[DEFAULT_LOCALE, `${base}${path}`], ...langs.map((l) => [l, `${base}/${l}${path === '/' ? '' : path}`])]) } : undefined)
   const [props, pages, posts, agents] = await Promise.all([
-    payload.find({ collection: 'properties', limit: 10000, depth: 0, pagination: false, select: { slug: true, updatedAt: true } }),
+    payload.find({ collection: 'properties', overrideAccess: false, limit: 10000, depth: 0, pagination: false, select: { slug: true, updatedAt: true } }),
     payload.find({ collection: 'pages', limit: 1000, depth: 0, pagination: false, select: { slug: true, updatedAt: true }, where: { _status: { equals: 'published' } } }),
     payload.find({ collection: 'posts', limit: 5000, depth: 0, pagination: false, select: { slug: true, updatedAt: true }, where: { _status: { equals: 'published' } } }),
     payload.find({ collection: 'agents', limit: 500, depth: 0, pagination: false, select: { slug: true, updatedAt: true } }),

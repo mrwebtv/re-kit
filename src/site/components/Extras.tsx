@@ -135,7 +135,7 @@ export function AlertSignup({ filters, summary }: { filters: Record<string, stri
       </div>
       <label className="rk-consent"><input type="checkbox" name="consent" required /> <span>{consentText || t('I agree to receive these emails.')} <a href={L('/privacy')}>{t('Privacy policy')}</a></span></label>
       {captcha.node}
-      <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px' }}><input name="website" tabIndex={-1} autoComplete="off" /></div>
+      <div aria-hidden="true" className="rk-hp"><input name="website" tabIndex={-1} autoComplete="off" /></div>
       {state === 'error' && <p className="rk-form-error" role="alert">{error}</p>}
     </form>
   )

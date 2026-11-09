@@ -12,7 +12,7 @@ type Params = Promise<{ slug: string }>
 async function getPost(slug: string) {
   const payload = await payloadClient()
   const s = await getSite()
-  const { docs } = await payload.find({ collection: 'posts', where: { slug: { equals: slug } }, limit: 1, depth: 2, locale: s.$.locale, draft: await isDraft() })
+  const { docs } = await payload.find({ collection: 'posts', where: { slug: { equals: slug } }, limit: 1, depth: 2, locale: s.$.locale, draft: await isDraft(), overrideAccess: await isDraft() })
   return docs[0] as Post | undefined
 }
 

@@ -111,7 +111,7 @@ export function LeadForm({ kind, propertyId, submitLabel, compact, slotsEnabled 
       {kind !== 'signup' && (
         <div className="rk-field"><label htmlFor={id('msg')}>{kind === 'contact' || kind === 'property' ? t('Message') : t('Message (optional)')}</label><textarea id={id('msg')} name="message" rows={compact ? 3 : 4} required={kind === 'contact' || kind === 'property'} /></div>
       )}
-      <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+      <div aria-hidden="true" className="rk-hp">
         <label htmlFor={id('website')}>Leave this empty</label>
         <input id={id('website')} name="website" tabIndex={-1} autoComplete="off" />
       </div>

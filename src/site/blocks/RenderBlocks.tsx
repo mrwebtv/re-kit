@@ -47,11 +47,11 @@ async function PropertyGrid({ b, s }: { b: Extract<Block, { blockType: 'property
     docs = ((b.properties || []) as (number | Property)[]).filter((x) => typeof x === 'object') as Property[]
     if (docs.length !== (b.properties || []).length) {
       const ids = (b.properties || []).map((x) => (typeof x === 'object' ? x.id : x))
-      const r = await payload.find({ collection: 'properties', where: { id: { in: ids } }, depth: 1, locale, limit: ids.length })
+      const r = await payload.find({ collection: 'properties', overrideAccess: false, where: { id: { in: ids } }, depth: 1, locale, limit: ids.length })
       docs = ids.map((id) => r.docs.find((d) => d.id === id)).filter(Boolean) as Property[]
     }
   } else {
-    docs = (await payload.find({ collection: 'properties', where: where.length ? { and: where } : undefined, depth: 1, locale, limit: b.limit || 6, sort: b.show === 'development' ? 'price' : '-createdAt' })).docs
+    docs = (await payload.find({ collection: 'properties', overrideAccess: false, where: where.length ? { and: where } : undefined, depth: 1, locale, limit: b.limit || 6, sort: b.show === 'development' ? 'price' : '-createdAt' })).docs
   }
   return (
     <Section bg={b.background}>
@@ -68,7 +68,7 @@ async function Posts({ b, s }: { b: Extract<Block, { blockType: 'latestPosts' }>
   const payload = await payloadClient()
   const { locale } = await getLocale()
   const cat = b.category && typeof b.category === 'object' ? b.category.id : b.category
-  const { docs } = await payload.find({ collection: 'posts', where: cat ? { categories: { in: [cat] } } : undefined, limit: b.limit || 3, depth: 1, locale, sort: '-publishedAt' })
+  const { docs } = await payload.find({ collection: 'posts', overrideAccess: false, where: cat ? { categories: { in: [cat] } } : undefined, limit: b.limit || 3, depth: 1, locale, sort: '-publishedAt' })
   if (!docs.length) return null
   return (
     <Section bg={b.background}>

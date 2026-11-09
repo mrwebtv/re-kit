@@ -8,7 +8,7 @@ export default async function HomePage() {
   if (s.homePage && typeof s.homePage === 'object') {
     const payload = await payloadClient()
     const draft = await isDraft()
-    const page = (await payload.findByID({ collection: 'pages', id: s.homePage.id, depth: 2, locale: s.$.locale, draft, disableErrors: true })) as Page | null
+    const page = (await payload.findByID({ collection: 'pages', id: s.homePage.id, depth: 2, locale: s.$.locale, draft, disableErrors: true, overrideAccess: draft })) as Page | null
     if (page?.layout?.length) return <RenderBlocks blocks={page.layout} s={s} />
   }
   const theme = getTheme(s.theme)

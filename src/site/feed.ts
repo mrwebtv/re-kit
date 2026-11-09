@@ -37,7 +37,7 @@ export async function getFeed() {
   const s = await getSettings()
   if (!s.features?.propertyFeed) return null
   const payload = await payloadClient()
-  const { docs } = await payload.find({ collection: 'properties', where: { and: [{ status: { in: ['for-sale', 'to-let'] } }, { source: { not_equals: 'mls' } }] }, limit: 2000, depth: 1, pagination: false })
+  const { docs } = await payload.find({ collection: 'properties', overrideAccess: false, where: { and: [{ status: { in: ['for-sale', 'to-let'] } }, { source: { not_equals: 'mls' } }] }, limit: 2000, depth: 1, pagination: false })
   const base = siteUrl()
   return { s, items: docs.map((p) => toItem(p, base)) }
 }

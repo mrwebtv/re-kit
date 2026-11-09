@@ -17,8 +17,14 @@ Secrets are generated automatically on first start and kept on the server.
 ## What's inside
 
 - Properties, Agents, Enquiries (property, valuation, contact) and Viewings
-- Every lead emails the property's agent and sends the visitor a confirmation
-- Pages, header and footer editable in the admin with a block builder
+- Every lead emails the property's agent, sends the visitor a confirmation and opens a deal in the built-in CRM (pipeline board, notes and tasks)
+- 4 switchable designs, 8 languages (including right-to-left Arabic) and a currency switcher
+- Search: radius and near me, price slider, multi-select filters, instant results, map, grid or list views, quick view, compare and favourites
+- Listings: custom fields and labels, developments with units, documents, private notes, expiry dates, reference numbers, energy scale, nearby places, Walk Score, PDF brochure and print view
+- Viewing booking from set time slots, agent profile pages, cookie-free visit analytics per listing and agent
+- Page builder with ready-made templates (About, Sell your home, New development, Area guide, Splash page) and a blog
+- MLS / IDX sync over the RESO Web API (Bridge, Trestle, Spark, MLS Grid), CSV and Kyero XML import, XML/JSON property feed
+- Spam protection: honeypot, rate limiting, optional Cloudflare Turnstile or reCAPTCHA v3
 - Postgres with PostGIS, media and database on persistent volumes, Caddy for HTTPS
 
 ## Local development

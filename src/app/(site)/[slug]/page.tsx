@@ -9,7 +9,7 @@ async function getPage(slug: string) {
   const payload = await payloadClient()
   const s = await getSite()
   const draft = await isDraft()
-  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 2, locale: s.$.locale, draft })
+  const { docs } = await payload.find({ collection: 'pages', where: { slug: { equals: slug } }, limit: 1, depth: 2, locale: s.$.locale, draft, overrideAccess: draft })
   return docs[0] as Page | undefined
 }
 

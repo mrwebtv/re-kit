@@ -158,7 +158,7 @@ export async function getProperties(f: ListingFilters = {}, limit = PAGE_SIZE) {
     const dLat = radius / 111
     const dLng = radius / (111 * Math.max(0.2, Math.cos((center.lat * Math.PI) / 180)))
     and.push({ lat: { greater_than_equal: center.lat - dLat } }, { lat: { less_than_equal: center.lat + dLat } }, { lng: { greater_than_equal: center.lng - dLng } }, { lng: { less_than_equal: center.lng + dLng } })
-    const cand = await payload.find({ collection: 'properties', where: { and }, pagination: false, limit: 5000, depth: 0, select: { lat: true, lng: true } })
+    const cand = await payload.find({ collection: 'properties', overrideAccess: false, where: { and }, pagination: false, limit: 5000, depth: 0, select: { lat: true, lng: true } })
     const within = cand.docs
       .map((d) => ({ id: d.id, km: distanceKm(center, { lat: d.lat!, lng: d.lng! }) }))
       .filter((d) => d.km <= radius)
@@ -166,22 +166,22 @@ export async function getProperties(f: ListingFilters = {}, limit = PAGE_SIZE) {
     distances = Object.fromEntries(within.map((d) => [d.id, Math.round(d.km * 10) / 10]))
     if (f.sort === 'distance' || !f.sort) {
       const slice = within.slice((page - 1) * limit, page * limit).map((d) => d.id)
-      const docs = slice.length ? (await payload.find({ collection: 'properties', where: { id: { in: slice } }, depth: 1, limit, locale, pagination: false })).docs : []
+      const docs = slice.length ? (await payload.find({ collection: 'properties', overrideAccess: false, where: { id: { in: slice } }, depth: 1, limit, locale, pagination: false })).docs : []
       const ordered = slice.map((id) => docs.find((d) => d.id === id)).filter(Boolean) as Property[]
       return { docs: ordered, totalDocs: within.length, totalPages: Math.max(1, Math.ceil(within.length / limit)), page, distances, center }
     }
     and.push({ id: { in: within.length ? within.map((d) => d.id) : [0] } })
   }
-  const res = await payload.find({ collection: 'properties', where: and.length ? { and } : undefined, sort, limit, page, depth: 1, locale })
+  const res = await payload.find({ collection: 'properties', overrideAccess: false, where: and.length ? { and } : undefined, sort, limit, page, depth: 1, locale })
   return { docs: res.docs, totalDocs: res.totalDocs, totalPages: res.totalPages, page: res.page || 1, distances, center }
 }
 
 export async function getFeatured(limit = 3) {
   const payload = await payloadClient()
   const { locale } = await getLocale()
-  const featured = await payload.find({ collection: 'properties', where: { featured: { equals: true } }, limit, depth: 1, sort: '-createdAt', locale })
+  const featured = await payload.find({ collection: 'properties', overrideAccess: false, where: { featured: { equals: true } }, limit, depth: 1, sort: '-createdAt', locale })
   if (featured.docs.length >= limit) return featured.docs
-  const rest = await payload.find({ collection: 'properties', limit, depth: 1, sort: '-createdAt', locale })
+  const rest = await payload.find({ collection: 'properties', overrideAccess: false, limit, depth: 1, sort: '-createdAt', locale })
   const seen = new Set(featured.docs.map((d) => d.id))
   return [...featured.docs, ...rest.docs.filter((d) => !seen.has(d.id))].slice(0, limit)
 }
@@ -189,14 +189,14 @@ export async function getFeatured(limit = 3) {
 export async function getProperty(slug: string) {
   const payload = await payloadClient()
   const { locale } = await getLocale()
-  const { docs } = await payload.find({ collection: 'properties', where: { slug: { equals: slug } }, depth: 2, limit: 1, locale })
+  const { docs } = await payload.find({ collection: 'properties', overrideAccess: false, where: { slug: { equals: slug } }, depth: 2, limit: 1, locale })
   return docs[0] as Property | undefined
 }
 
 export async function getUnits(p: Property) {
   const payload = await payloadClient()
   const { locale } = await getLocale()
-  const { docs } = await payload.find({ collection: 'properties', where: { parent: { equals: p.id } }, depth: 1, limit: 100, sort: 'price', locale })
+  const { docs } = await payload.find({ collection: 'properties', overrideAccess: false, where: { parent: { equals: p.id } }, depth: 1, limit: 100, sort: 'price', locale })
   return docs
 }
 
@@ -204,7 +204,7 @@ export async function getSimilar(p: Property, limit = 3) {
   const payload = await payloadClient()
   const { locale } = await getLocale()
   const { docs } = await payload.find({
-    collection: 'properties',
+    collection: 'properties', overrideAccess: false,
     where: { and: [{ id: { not_equals: p.id } }, { status: { equals: p.status } }, { parent: { not_equals: p.id } }] },
     limit,
     depth: 1,

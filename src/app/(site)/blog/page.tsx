@@ -15,7 +15,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const cats = await payload.find({ collection: 'categories', limit: 50, depth: 0, locale: s.$.locale })
   const cat = cats.docs.find((c) => c.slug === sp.category)
   const where: Where | undefined = cat ? { categories: { in: [cat.id] } } : undefined
-  const res = await payload.find({ collection: 'posts', where, limit: 12, page: Number(sp.page) || 1, depth: 1, locale: s.$.locale, sort: '-publishedAt' })
+  const res = await payload.find({ collection: 'posts', overrideAccess: false, where, limit: 12, page: Number(sp.page) || 1, depth: 1, locale: s.$.locale, sort: '-publishedAt' })
   return (
     <div className="rk-wrap" style={{ paddingBottom: 112 }}>
       <div className="rk-page-head">
