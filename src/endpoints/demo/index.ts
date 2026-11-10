@@ -191,9 +191,19 @@ async function fetchPhoto(payload: Payload, key: PhotoKey, cache: Map<PhotoKey, 
   try {
     // Headshots are cropped around the face to a 4:5 portrait so the team looks consistent.
     const params = 'portrait' in photo ? 'w=900&h=1125&fit=crop&crop=faces&q=80&fm=jpg' : 'w=1920&q=80&fm=jpg&fit=max'
-    const res = await fetch(`${photo.url}?${params}`, { redirect: 'follow' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = Buffer.from(await res.arrayBuffer())
+    // Unsplash can rate-limit a burst of downloads from a fresh server, so retry with a pause.
+    let data: Buffer | null = null
+    for (let attempt = 1; attempt <= 4 && !data; attempt++) {
+      try {
+        const res = await fetch(`${photo.url}?${params}`, { redirect: 'follow', signal: AbortSignal.timeout(30000) })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        data = Buffer.from(await res.arrayBuffer())
+      } catch (e) {
+        if (attempt === 4) throw e
+        await new Promise((r) => setTimeout(r, attempt * 2000))
+      }
+    }
+    if (!data) throw new Error('no data')
     const doc = await payload.create({
       collection: 'media',
       data: { alt: photo.alt },
@@ -246,6 +256,9 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
   if (existing.totalDocs > 0) return { skipped: true, message: 'The demo content is already loaded. Use Reset demo content to load it again.' }
 
   const cache = new Map<PhotoKey, number>()
+  // The homepage hero and Sell page images come first, so they never miss out if later downloads are throttled.
+  const heroImage = await fetchPhoto(payload, 'exterior1', cache)
+  const sellImage = await fetchPhoto(payload, 'living1', cache)
   const agentIds: number[] = []
   for (const { photo, ...a } of AGENTS) {
     const photoId = await fetchPhoto(payload, photo, cache)
@@ -355,8 +368,6 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
     await payload.create({ collection: 'activities', req, overrideAccess: true, data: { deal: deal.id, type: 'note', summary: 'Demo deal. Delete it any time.' } })
   }
 
-  const heroImage = await fetchPhoto(payload, 'exterior1', cache)
-  const sellImage = await fetchPhoto(payload, 'living1', cache)
   await payload.updateGlobal({
     slug: 'site-settings',
     req,
