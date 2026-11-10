@@ -233,6 +233,8 @@ async function removeDemo(payload: Payload, req?: PayloadRequest) {
   const deals = await payload.find({ collection: 'deals', where: { contactEmail: { like: '@example.com' } }, limit: 500, depth: 0, req, overrideAccess: true })
   if (deals.docs.length) await deleteAll(payload, 'activities', { deal: { in: deals.docs.map((d) => d.id) } }, req)
   await deleteAll(payload, 'deals', { contactEmail: { like: '@example.com' } }, req)
+  await deleteAll(payload, 'enquiries', { email: { like: '@example.com' } }, req)
+  await deleteAll(payload, 'viewings', { email: { like: '@example.com' } }, req)
   await deleteAll(payload, 'properties', { slug: { in: DEMO_SLUGS } }, req)
   await deleteAll(payload, 'pages', { slug: { in: DEMO_PAGES } }, req)
   await deleteAll(payload, 'posts', { slug: { in: DEMO_POSTS } }, req)
@@ -366,6 +368,44 @@ export async function seedDemo(payload: Payload, req?: PayloadRequest, reset = f
   for (const [name, stage, prop, value] of dealsDemo) {
     const deal = await payload.create({ collection: 'deals', req, overrideAccess: true, data: { title: `${name} · ${prop}`, stage: stage as never, contactName: name, contactEmail: `${name.split(' ')[0]!.toLowerCase()}@example.com`, property: created[prop], value, source: 'property' } })
     await payload.create({ collection: 'activities', req, overrideAccess: true, data: { deal: deal.id, type: 'note', summary: 'Demo deal. Delete it any time.' } })
+  }
+
+  /* Sample leads and viewing requests so the Leads screens are not empty. Written straight to the
+     database, so no emails go out and no extra deals are created. */
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 3600_000).toISOString()
+  const enquiriesDemo: [string, 'property' | 'valuation' | 'contact', string | null, 'new' | 'contacted' | 'closed', number, string][] = [
+    ['Lucas Moreau', 'property', 'Villa Serena', 'new', 0.2, 'Hi, is Villa Serena still available? We fly in next week and would love a private viewing.'],
+    ['Grace O’Connell', 'property', 'Harbour View Penthouse', 'new', 0.8, 'Could you send me the service charges and the floor plan for the penthouse?'],
+    ['Henrik Sørensen', 'valuation', null, 'new', 2, 'Thinking of selling our 4 bed townhouse near the old harbour. When could you come out?'],
+    ['Isabella Cruz', 'property', 'Palm Court Residence', 'contacted', 5, 'Is there any flexibility on the price? We are cash buyers.'],
+    ['Noah Fischer', 'contact', null, 'new', 7, 'Do you manage rentals for overseas owners?'],
+    ['Amelia Grant', 'property', 'Linden House', 'contacted', 26, 'We would like a second viewing with our architect, ideally on a weekday morning.'],
+    ['Ravi Menon', 'property', 'Riverside Quarter, Penthouse 5', 'new', 30, 'Is the penthouse still available off-plan, and what is the completion date?'],
+    ['Claire Dubois', 'valuation', null, 'contacted', 48, 'Please value my 3 bed apartment with sea views.'],
+    ['William Harper', 'property', 'The Old Rectory', 'closed', 72, 'Thank you for all your help, delighted the offer was accepted!'],
+    ['Chloe Martin', 'property', 'Garden House, Maple Lane', 'new', 78, 'Does the garden house allow pets? We have a very well-behaved dog.'],
+    ['Oliver Brandt', 'property', 'Riverside Quarter, Apartment 2A', 'contacted', 96, 'Is parking included with apartment 2A?'],
+    ['Mia Rossi', 'contact', null, 'closed', 120, 'Can you recommend a good mortgage broker in the area?'],
+  ]
+  for (const [name, type, prop, status, h, message] of enquiriesDemo) {
+    const first = name.split(' ')[0]!.toLowerCase().replace(/[^a-z]/g, '')
+    await payload.db.create({ collection: 'enquiries', req, data: { type, status, property: prop ? created[prop] : null, name, email: `${first}@example.com`, phone: '+44 7700 900' + String(100 + Math.round(h)).slice(-3), message, consent: true, consentAt: hoursAgo(h), createdAt: hoursAgo(h), updatedAt: hoursAgo(h) } })
+  }
+  const slotAt = (days: number, hour: number) => { const d = new Date(); d.setUTCDate(d.getUTCDate() + days); d.setUTCHours(hour, hour % 2 ? 30 : 0, 0, 0); return d.toISOString() }
+  const viewingsDemo: [string, string, number, number, 'requested' | 'confirmed' | 'completed' | 'cancelled', number][] = [
+    ['Lucas Moreau', 'Villa Serena', 2, 10, 'requested', 0.3],
+    ['Grace O’Connell', 'Harbour View Penthouse', 1, 11, 'confirmed', 1],
+    ['Amelia Grant', 'Linden House', 3, 9, 'confirmed', 26],
+    ['Sam Patel', 'Riverside Quarter, Apartment 2A', 2, 14, 'requested', 4],
+    ['Elena Rossi', 'Riverside Quarter', 4, 15, 'requested', 9],
+    ['Jack Thompson', 'Garden Apartment, Elm Court', -2, 16, 'completed', 80],
+    ['Priya Shah', 'Harbour View Penthouse', -1, 12, 'completed', 50],
+    ['Tom Avery', 'The Old Rectory', 5, 13, 'cancelled', 30],
+  ]
+  for (const [name, prop, days, hour, status, h] of viewingsDemo) {
+    if (!created[prop]) continue
+    const first = name.split(' ')[0]!.toLowerCase().replace(/[^a-z]/g, '')
+    await payload.db.create({ collection: 'viewings', req, data: { property: created[prop], preferredDate: slotAt(days, hour), status, name, email: `${first}@example.com`, phone: '+44 7700 900' + String(200 + h).slice(-3), message: 'Looking forward to seeing it.', consent: true, consentAt: hoursAgo(h), createdAt: hoursAgo(h), updatedAt: hoursAgo(h) } })
   }
 
   await payload.updateGlobal({
